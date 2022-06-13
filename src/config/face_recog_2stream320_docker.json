@@ -1,0 +1,34 @@
+{
+    "video_sources": [
+        {
+            "path": "/host/REPOS/face_recognition/python/videos/face-demographics-walking.mp4"            
+        },
+        {
+            "path": "/host/REPOS/face_recognition/python/videos/face-demographics-walking-and-pause.mp4"                        
+        }
+    ], 
+    "face_detection":{
+        "batch_size": 2,
+        "face_det_model": {
+                "path": "/host/REPOS/face_recognition/python/models/face_detectors/RetinaFaceResnet50/FaceDetectorResnet50BATCH2_320.onnx",
+                "type": "detection",
+                "name": "retinaface",
+                "framework": "ONNX",
+                "input_w": 320,
+                "input_h": 320,
+                "backend": "TRT",
+                "target": "GPU",
+                "decoder": "retinaface",
+                "mc1": 104.0,
+                "mc2": 117.0,
+                "mc3": 123.0,
+                "obj_th": 0.5,
+                "nms_th": 0.2,
+                "ncls" : 2,
+                "labels": ["none", "face"],
+                "frames_to_count": 3,
+                "frames_to_discart": 2,
+                "tracker_iou": 0.2
+            }
+    }
+}

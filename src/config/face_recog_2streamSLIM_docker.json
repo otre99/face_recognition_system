@@ -1,0 +1,36 @@
+{
+    "video_sources": [
+        {
+            "path": "/host/REPOS/face_recognition/python/videos/face-demographics-walking.mp4"            
+        },
+        {
+            "path": "/host/REPOS/face_recognition/python/videos/face-demographics-walking-and-pause.mp4"                        
+        }
+    ], 
+    "face_detection":{
+        "batch_size": 1,
+        "face_det_model": {
+                "path": "/host/REPOS/face_recognition/python/models/face_detectors/ULFD/version-slim-320_without_postprocessing.onnx",
+                "type": "detection",
+                "name": "ulfd-slim",
+                "framework": "ONNX",
+                "input_w": 320,
+                "input_h": 240,
+                "backend": "TRT",
+                "target": "GPU",
+                "decoder": "ulfd",
+                "scale":0.0078125,
+                "swap_ch": true,
+                "mc1": 127.0,
+                "mc2": 127.0,
+                "mc3": 127.0,
+                "obj_th": 0.5,
+                "nms_th": 0.2,
+                "ncls" : 2,
+                "labels": ["none", "face"],
+                "frames_to_count": 3,
+                "frames_to_discart": 2,
+                "tracker_iou": 0.2
+            }
+    }
+}
