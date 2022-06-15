@@ -7,5 +7,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(OpenCV  4.5 REQUIRED)
 
-add_executable(face_recognition_system main.cpp)
+set(VISION_SRC
+    vision/predictor.h vision/predictor.cpp
+    vision/opencv_predictor.h vision/opencv_predictor.cpp
+    vision/common_utils.h     vision/common_utils.cpp
+)
+
+set(MAIN_SRC
+face_detection.h face_detection.cpp
+detection_decoders.h detection_decoders.cpp
+)
+
+add_executable(face_recognition_system main.cpp ${VISION_SRC} ${MAIN_SRC})
 target_link_libraries(face_recognition_system ${OpenCV_LIBS})
