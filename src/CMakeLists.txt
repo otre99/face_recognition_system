@@ -11,11 +11,15 @@ set(VISION_SRC
     vision/predictor.h vision/predictor.cpp
     vision/opencv_predictor.h vision/opencv_predictor.cpp
     vision/common_utils.h     vision/common_utils.cpp
+    vision/tracker.h     vision/tracker.cpp
+    vision/kuhnmunkres.h     vision/kuhnmunkres.cpp
+    vision/detection_decoders.h vision/detection_decoders.cpp
 )
 
 set(MAIN_SRC
 face_detection.h face_detection.cpp
-detection_decoders.h detection_decoders.cpp
+io_utils.h io_utils.cpp
+
 )
 
 add_executable(face_recognition_system main.cpp ${VISION_SRC} ${MAIN_SRC})

@@ -1,6 +1,6 @@
 #ifndef DETECTION_DECODERS_H_
 #define DETECTION_DECODERS_H_
-#include "vision/common_utils.h"
+#include "common_utils.h"
 #include <opencv2/opencv.hpp>
 #include <set>
 

@@ -22,7 +22,8 @@ void OpenCVPredictor::Predict(const vector<cv::Mat> &images,
                               vector<cv::Mat> &outputs,
                               const vector<string> &output_names) {
 
-  auto blob = this->CreateInputBlob(images);
+  auto blob = cv::dnn::blobFromImages(images, scale_, input_size_, mean_,
+                                      swap_ch_, false, CV_32F);
   net_.setInput(blob);
   if (output_names.empty()) {
     net_.forward(outputs);

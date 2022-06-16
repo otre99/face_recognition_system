@@ -27,8 +27,6 @@ public:
   virtual ~Predictor(){};
 
 protected:
-  cv::Mat CreateInputBlob(const vector<cv::Mat> &images) const;
-
   Predictor() {}
   std::function<void(cv::Mat, float *)> normalization_fnt_{};
   cv::Size input_size_{};

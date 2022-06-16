@@ -2,10 +2,11 @@
 #include <opencv2/opencv.hpp>
 #include "vision/opencv_predictor.h"
 #include "face_detection.h"
+#include "vision/tracker.h"
 
 using namespace std;
 
-void Draw(cv::Mat &image, const vector<BBox> &detections) {
+void Draw(cv::Mat &image, const vector<TrackedObject> &detections) {
     for (const auto &obj : detections) {
 
         cv::Scalar color = cv::Scalar(0, 0, 0);
@@ -17,12 +18,12 @@ void Draw(cv::Mat &image, const vector<BBox> &detections) {
             txt_color = cv::Scalar(255, 255, 255);
         }
         cv::rectangle(image, obj.rect,
-                      cv::Scalar((17 * obj.label) % 256, (7 * obj.label) % 256,
-                                 (37 * obj.label) % 256),
+                      cv::Scalar((17 * obj.id) % 256, (7 * obj.id) % 256,
+                                 (37 * obj.id) % 256),
                       2);
 
         char text[256];
-        sprintf(text, "id-%d", obj.label);
+        sprintf(text, "id-%ld", obj.id);
 
 
         int baseLine = 0;
@@ -50,15 +51,20 @@ int main()
     faceDet.Init();
 
     cv::VideoCapture cap("/home/rccr/REPOS/face_recognition_system/videos/face-demographics-walking.mp4");
+    Tracker tracker;
+    tracker.Init(3,5,0.25);
+
     cv::Mat frame;
     vector<cv::Mat> outputs;
-    while (cap.read(frame)){
-        faceDet.ProcessFrame(frame);
 
-        Draw(frame,faceDet.detections);
+
+    while (cap.read(frame)){
+        faceDet.Process(frame);
+        //Draw(frame, tracker.GetTrackedObjects());
+
 
         cv::imshow("DET", frame);
-        cv::waitKey(1);
+        cv::waitKey(-1);
     }
 
     return 0;

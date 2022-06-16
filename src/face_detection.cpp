@@ -10,11 +10,13 @@ void FaceDetection::Init() {
   face_detector_->setExplictInputSize({320, 240});
   det_decoder_.reset(new ULFDDecoder());
   det_decoder_->Init(0.5, 0.25, {320, 240});
+  faces_tracker_.Init(11, 5, 0.25);
 }
 
-void FaceDetection::ProcessFrame(const cv::Mat &frame) {
+void FaceDetection::Process(const cv::Mat &frame) {
   vector<cv::Mat> outputs;
   face_detector_->Predict(frame, outputs, det_decoder_->ExpectedLayerNames());
-  det_decoder_->Decode(outputs, detections, det_decoder_->ExpectedLayerNames(),
+  det_decoder_->Decode(outputs, recent_detections_, det_decoder_->ExpectedLayerNames(),
                        frame.size());
+  faces_tracker_.Process(recent_detections_,face_label_id_);
 }
