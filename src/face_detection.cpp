@@ -14,9 +14,13 @@ void FaceDetection::Init() {
 }
 
 void FaceDetection::Process(const cv::Mat &frame) {
-  vector<cv::Mat> outputs;
-  face_detector_->Predict(frame, outputs, det_decoder_->ExpectedLayerNames());
-  det_decoder_->Decode(outputs, recent_detections_, det_decoder_->ExpectedLayerNames(),
-                       frame.size());
-  faces_tracker_.Process(recent_detections_,face_label_id_);
+    DetecFaces(frame);
+    faces_tracker_.Process(recent_detections_,face_label_id_);
+}
+
+void FaceDetection::DetecFaces(const cv::Mat &frame){
+    vector<cv::Mat> outputs;
+    face_detector_->Predict(frame, outputs, det_decoder_->ExpectedLayerNames());
+    det_decoder_->Decode(outputs, recent_detections_, det_decoder_->ExpectedLayerNames(),
+                         frame.size());
 }

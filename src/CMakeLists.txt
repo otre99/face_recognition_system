@@ -19,8 +19,13 @@ set(VISION_SRC
 set(MAIN_SRC
 face_detection.h face_detection.cpp
 io_utils.h io_utils.cpp
-
 )
+
+
 
 add_executable(face_recognition_system main.cpp ${VISION_SRC} ${MAIN_SRC})
 target_link_libraries(face_recognition_system ${OpenCV_LIBS})
+
+
+add_executable(dbtool db_main.cpp dbmanager.cpp dbmanager.h ${MAIN_SRC} nlohmann/json.hpp)
+target_link_libraries(dbtool ${OpenCV_LIBS})

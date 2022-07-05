@@ -12,6 +12,7 @@ class FaceDetection {
 public:
   void Init();
   void Process(const cv::Mat &frame);
+  void DetecFaces(const cv::Mat &frame);
 
 
 private:
