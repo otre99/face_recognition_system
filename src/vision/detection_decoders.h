@@ -77,6 +77,7 @@ public:
   };
   void Init(float scoreTh, float nmsTh,
             const cv::Size &network_input_size = {}) override;
+
   void Decode(const vector<cv::Mat> &outRaw, vector<BBox> &objects,
               const vector<string> &onames = {},
               const cv::Size &img_size = {}) override;

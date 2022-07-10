@@ -1,11 +1,11 @@
 #include "io_utils.h"
 #include <fstream>
-
+#include "vision/opencv_predictor.h"
 using namespace std;
 
-nlohmann::json LoadJSon(const std::string &fpath) {
-    std::ifstream ifile(fpath);
-    std::stringstream buffer;
+nlohmann::json LoadJSon(const string &fpath) {
+    ifstream ifile(fpath);
+    stringstream buffer;
     buffer << ifile.rdbuf();
     return nlohmann::json::parse(buffer.str());
 }
@@ -22,48 +22,45 @@ shared_ptr<Predictor> PredictorFromJson(const nlohmann::json &conf){
     const float scale = conf.value("scale", 1.0);
     const bool swap_ch = conf.value("swap_ch", false);
 
-    const std::string model_path = conf.value("path", "");
-    const std::string mpath_config = conf.value("path_config", "");
+    const string model_path = conf.value("weights", "");
+    const string mpath_config = conf.value("config", "");
 
     const float mc1 = conf.value("mc1", 0.0f);
     const float mc2 = conf.value("mc2", 0.0f);
     const float mc3 = conf.value("mc3", 0.0f);
 
-    std::cout << "Model name: " << model_name << std::endl;
-    std::cout << "  Type         : " << model_type << std::endl;
-    std::cout << "  Input Size   : [" << input_w << 'X' << input_h << ']'
-              << std::endl;
-    std::cout << "  Input Scale  :  " << scale << std::endl;
-    std::cout << "  Input Mean   : [" << mc1 << ',' << mc2 << ',' << mc3 << ']'
-              << std::endl;
-    std::cout << "  Swap Channels:  " << swap_ch << std::endl;
-    std::cout << "  Framework    :  " << framework << std::endl;
-    std::cout << "  Target       :  " << target << std::endl;
-    std::cout << "  Backend      :  " << backend << std::endl;
-    std::cout << "  File Path    :  " << model_path << std::endl;
+    cout << "Model name     : " << model_name << endl;
+    cout << "  Type         : " << model_type << endl;
+    cout << "  Input Size   : [" << input_w << 'X' << input_h << ']' << endl;
+    cout << "  Input Scale  : " << scale << endl;
+    cout << "  Input Mean   : [" << mc1 << ',' << mc2 << ',' << mc3 << ']' << endl;
+    cout << "  Swap Channels: " << swap_ch << endl;
+    cout << "  Framework    : " << framework << endl;
+    cout << "  Target       : " << target << endl;
+    cout << "  Backend      : " << backend << endl;
+    cout << "  Config file  : " << mpath_config << endl;
+    cout << "  Weights file : " << model_path << endl;
 
-    std::shared_ptr<Predictor> result;
-//    if (backend == "TRT") {
-//        result = TensorRTPredictor::Create(model_path, framework);
-//    } else if (backend == "OCV") {
-//        result = OpenCVPredictor::Create(model_path, mpath_config, framework);
-//        auto p = dynamic_cast<OpenCVPredictor *>(result.get());
-//        if (target == "GPU") {
-//            //#ifdef HAVE_CUDA
-//            p->SetBackend(cv::dnn::DNN_BACKEND_CUDA);
-//            p->SetTargetDevice(cv::dnn::DNN_TARGET_CUDA);
-//            //#else
-//            //      std::cerr << "Your version of OpenCV does not support GPU
-//            //      inference. "
-//            //                   "Therefore, CPU inference will be used"
-//            //                << std::endl;
-//            //#endif
-//        } else {
-//            p->SetBackend(cv::dnn::DNN_BACKEND_OPENCV);
-//            p->SetTargetDevice(cv::dnn::DNN_TARGET_CPU);
-//        }
-//    }
+    shared_ptr<Predictor> result;
+    if (backend == "OCV") {
+        result = OpenCVPredictor::Create(model_path, mpath_config, framework);
+    } else {
+        cerr << "Backend '" << backend << "' is not supported" << endl;
+        return {};
+    }
     result->setExplictInputSize({input_w, input_h});
     result->SetInputParamsNorm(scale, {mc1, mc2, mc3}, swap_ch);
     return result;
+}
+
+void TrackerFromJson(const nlohmann::json &conf, Tracker &tracker) {
+
+    const int frames_to_count = conf.value("frames_to_count", 0);
+    const int frames_to_discart = conf.value("frames_to_discart", 0);
+    const float iou = conf.value("tracker_iou", 0.0);
+    cout << "Configuring tracker " << endl;
+    cout << "  frames_to_count   : " << frames_to_count << endl;
+    cout << "  frames_to_discart : " << frames_to_discart << endl;
+    cout << "  tracker_iou       : " << iou << endl;
+    tracker.Init(frames_to_count, frames_to_discart, iou);
 }

@@ -1,0 +1,53 @@
+{
+    "txt_file": "",            
+    "images_folder":"",
+    "db": "/home/rccr/RBT/REPOS/face_recognition_system/db.dataset",
+    "embedding_len": 32,
+    "face_detection": {
+        "model":{
+            "config": "",
+            "weights":"/home/rccr/RBT/REPOS/face_recognition_system/models/RFB-320.onnx",
+            "name": "RFB320",
+            "type": "detection",
+            "framework": "ONNX",
+            "input_w": 320,
+            "input_h": 240,
+            "backend": "OCV",
+            "target": "CPU",
+            "decoder": "ULFDDecoder",
+            "scale": 0.0078125,
+            "mc1": 127.5,
+            "mc2": 127.5,
+            "mc3": 127.5,
+            "obj_th": 0.5,
+            "nms_th": 0.2,
+            "swap_ch":true,
+            "ncls": 2,
+            "labels": ["none", "face"]
+        },
+        "tracker": {
+            "frames_to_count": 3,
+            "frames_to_discart": 8,
+            "tracker_iou": 0.2     
+        }   
+    },
+    "face_embedding": {
+        "model" : {
+            "config": "",
+            "weights":"",
+            "name": "varg",
+            "framework": "ONNX",
+            "input_w": 160,
+            "input_h": 160,
+            "backend": "OCV",
+            "target": "CPU",
+            "decoder": "retinaface",
+            "mc1": 104.0,
+            "mc2": 117.0,
+            "mc3": 123.0,
+            "obj_th": 0.5,
+            "nms_th": 0.2,
+            "swap_ch":false
+        }
+    }
+}

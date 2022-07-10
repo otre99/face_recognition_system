@@ -27,5 +27,5 @@ add_executable(face_recognition_system main.cpp ${VISION_SRC} ${MAIN_SRC})
 target_link_libraries(face_recognition_system ${OpenCV_LIBS})
 
 
-add_executable(dbtool db_main.cpp dbmanager.cpp dbmanager.h ${MAIN_SRC} nlohmann/json.hpp)
-target_link_libraries(dbtool ${OpenCV_LIBS})
+add_executable(dbcreator db_creator.cpp dbmanager.cpp dbmanager.h ${MAIN_SRC} ${VISION_SRC} nlohmann/json.hpp)
+target_link_libraries(dbcreator ${OpenCV_LIBS})

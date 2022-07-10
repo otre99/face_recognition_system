@@ -3,6 +3,7 @@
 #include <cstring>
 #include <algorithm>
 #include <cmath>
+#include <filesystem>
 
 double CalcL2Norm(const vector<float> &x)
 {
@@ -68,19 +69,13 @@ bool DBManager::Open(const string &mpath, bool write, int32_t embedding_len)
         cerr << "Wrong value of 'embedding_len' " << endl;
         return false;
     }
-    iofile_.open(mpath, ios::binary|ios::ate);
-    if (!iofile_){
-        cerr << "Error opening file " << mpath << " for write "<< endl;
-        return false;
-    }
 
-    if ( iofile_.tellp()!=0 ){
-        iofile_.close();
-
+    if ( filesystem::exists(mpath) ){
         cout << " File '" << mpath << "' already exists, so the new data will be added to the end" << endl;
         iofile_.open(mpath);
         int32_t n;
         iofile_.read(reinterpret_cast<char*>(&n), sizeof(int32_t));
+        iofile_.close();
         if (n != embedding_len){
             cerr << "ERROR: Impossible to add new data to the file of '" << mpath
                  << "' because the length of the new face embedding differs from those in the file" << endl;
@@ -88,11 +83,16 @@ bool DBManager::Open(const string &mpath, bool write, int32_t embedding_len)
             return false;
         }
         iofile_.open(mpath, ios::binary|ios::ate);
-    }
-
-    embedding_len_ = embedding_len;
-    if (iofile_.tellp()==0)
+    } else {
+        cout << "Creating dataset '" << mpath << "'" << endl;
+        embedding_len_ = embedding_len;
+        iofile_.open(mpath,ios::binary|ios::out);
+        if (!iofile_){
+            cerr << "Error creating file " << mpath << " for write "<< endl;
+            return false;
+        }
         iofile_.write(reinterpret_cast<char*>(&embedding_len_), sizeof(int32_t));
+    }
     return true;
 }
 

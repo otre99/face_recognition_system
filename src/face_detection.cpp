@@ -1,9 +1,15 @@
 #include "face_detection.h"
 #include "vision/opencv_predictor.h"
 #include <algorithm>
+#include "io_utils.h"
 
-void FaceDetection::Init() {
-  const string model_path =
+void FaceDetection::Init(const nlohmann::json &conf) {
+
+    face_detector_ = PredictorFromJson(conf["model"]);
+    TrackerFromJson(conf["tracker"], faces_tracker_);
+
+/*
+    const string model_path =
       "/home/rccr/REPOS/face_recognition_system/models/RFB-320.onnx";
   face_detector_ = OpenCVPredictor::Create(model_path, "", "ONNX");
   face_detector_->SetInputParamsNorm(1.0 / 128, {127.5, 127.5, 127.5}, true);
@@ -11,6 +17,7 @@ void FaceDetection::Init() {
   det_decoder_.reset(new ULFDDecoder());
   det_decoder_->Init(0.5, 0.25, {320, 240});
   faces_tracker_.Init(11, 5, 0.25);
+*/
 }
 
 void FaceDetection::Process(const cv::Mat &frame) {

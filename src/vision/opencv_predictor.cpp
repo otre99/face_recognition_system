@@ -1,5 +1,4 @@
 #include "opencv_predictor.h"
-#include <stdexcept>
 
 shared_ptr<Predictor> OpenCVPredictor::Create(const string &model_path,
                                               const string &config_path,

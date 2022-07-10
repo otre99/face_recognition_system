@@ -47,6 +47,7 @@ void Draw(cv::Mat &image, const vector<TrackedObject> &detections) {
 
 int main()
 {
+    /*
     FaceDetection faceDet;
     faceDet.Init();
 
@@ -68,4 +69,5 @@ int main()
     }
 
     return 0;
+    */
 }
