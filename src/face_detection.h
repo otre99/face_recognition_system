@@ -14,7 +14,6 @@ public:
   void Process(const cv::Mat &frame);
   void DetecFaces(const cv::Mat &frame);
 
-
 private:
   vector<BBox> recent_detections_;
   shared_ptr<Predictor> face_detector_{};

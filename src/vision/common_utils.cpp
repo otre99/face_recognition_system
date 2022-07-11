@@ -12,4 +12,3 @@ void ScaleRect(cv::Rect &r, float scale) {
 cv::Rect RectInsideFrame(const cv::Rect &rect, const cv::Mat &frame) {
   return rect & cv::Rect{0, 0, frame.cols, frame.rows};
 }
-

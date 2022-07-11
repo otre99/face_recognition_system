@@ -77,7 +77,7 @@ bool DBManager::Open(const string &mpath, bool write, int32_t embedding_len)
         iofile_.read(reinterpret_cast<char*>(&n), sizeof(int32_t));
         iofile_.close();
         if (n != embedding_len){
-            cerr << "ERROR: Impossible to add new data to the file of '" << mpath
+            cerr << "ERROR: Impossible to add new data to file of '" << mpath
                  << "' because the length of the new face embedding differs from those in the file" << endl;
             iofile_.close();
             return false;

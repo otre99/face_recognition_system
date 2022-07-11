@@ -1,12 +1,12 @@
 {
-    "txt_file": "",            
+    "txt_file": "/test_storage/images.txt",            
     "images_folder":"",
-    "db": "/home/rccr/RBT/REPOS/face_recognition_system/db.dataset",
+    "db": "/test_storage/db.dataset",
     "embedding_len": 32,
     "face_detection": {
         "model":{
             "config": "",
-            "weights":"/home/rccr/RBT/REPOS/face_recognition_system/models/RFB-320.onnx",
+            "weights":"/test_storage/models/RFB-320.onnx",
             "name": "RFB320",
             "type": "detection",
             "framework": "ONNX",
