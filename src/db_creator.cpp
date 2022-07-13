@@ -3,7 +3,7 @@
 #include "io_utils.h"
 #include <filesystem>
 #include <iostream>
-
+#include <opencv2/opencv.hpp>
 using namespace std;
 namespace fs = filesystem;
 
@@ -36,7 +36,26 @@ int main(int argc, char *argv[]) {
     return 0;
   }
   while (ifile >> face_id >> img_path) {
-    cout << (folder_path / img_path).native() << endl;
+    const string img_path =  folder_path / img_path;
+    const cv::Mat image = cv::imread(img_path);
+    if (image.empty()){
+        cerr << "Error opening image: " << img_path << endl;
+        cerr << "Skiping this image" << endl;
+    }
+    faceDet.DetecFaces(image);
+    auto dets = faceDet.GetRecentDetections();
+
+    if ( dets.empty() ){
+        cerr << "Not faces detected in image image: " << img_path << endl;
+        cerr << "Skiping this image" << endl;
+    }
+
+    if ( dets.size() > 1 ) {
+        cerr << "More than one face detected in image image: " << img_path << endl;
+        cerr << "Skiping this image" << endl;
+    }
+
+
   }
 
   return 0;

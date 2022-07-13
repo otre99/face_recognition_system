@@ -13,6 +13,9 @@ public:
   void Init(const nlohmann::json &conf);
   void Process(const cv::Mat &frame);
   void DetecFaces(const cv::Mat &frame);
+  const vector<BBox> &GetRecentDetections() const {
+      return recent_detections_;
+  }
 
 private:
   vector<BBox> recent_detections_;
