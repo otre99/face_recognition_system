@@ -118,9 +118,9 @@ bool  DBManager::AddData(const char *faceId, const vector<float> &data, bool is_
         return false;
     }
 
-    char key[32];
-    strcpy(key, faceId);
-    iofile_.write(key,KEY_SIZE);
+    char key[KEY_SIZE+1];
+    strncpy(key, faceId, KEY_SIZE);
+    iofile_.write(key, KEY_SIZE);
     if (is_normalized) {
         iofile_.write(reinterpret_cast<const char*>(data.data()), sizeof(float)*embedding_len_);
     } else {
