@@ -20,7 +20,6 @@ void FaceDetection::DetecFaces(const cv::Mat &frame){
                          frame.size());
 }
 
-vector<Face> FaceDetection::DetecFacesAndAlign(const cv::Mat &frame){
-    //if (face_detector_->GetName() == "RetinaNet")
-    return {};
+vector<Face> DetecFacesAndAlign(const cv::Mat &frame){
+
 }

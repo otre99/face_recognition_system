@@ -11,6 +11,7 @@ struct TrackedObject {
   int last_frame;
   int frames_count;
   cv::Rect rect;
+  int user_id;
 };
 
 class Tracker {
@@ -20,6 +21,7 @@ public:
             float iou_th = 0.25);
   void Reset();
   void Process(const vector<BBox> &objects, int obj_label);
+  void Process(const vector<BBox> &objects, int obj_label, vector<int> user_ids);
 
   const std::vector<TrackedObject> &GetTrackedObjects() const {
     return tracked_objects_;

@@ -1,8 +1,8 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include "vision/opencv_predictor.h"
+#include "opencv_predictor.h"
 #include "face_detection.h"
-#include "vision/tracker.h"
+#include "tracker.h"
 
 using namespace std;
 

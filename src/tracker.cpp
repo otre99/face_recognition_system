@@ -5,6 +5,7 @@
 namespace {
 constexpr int NEW_OBJ_PENDING = -1;
 constexpr int NEW_OBJ_ADDED = -2;
+constexpr int DEFAULT_USER_ID = std::numeric_limits<int>::min();
 } // namespace
 
 void Tracker::Init(int frames_to_count, int frames_to_discard, float iou_th) {
@@ -35,9 +36,30 @@ void Tracker::Process(const std::vector<BBox> &objects, int obj_label) {
     obj.frames_count = 1;
     obj.rect = o.rect;
     obj.score = o.score;
+    obj.user_id = DEFAULT_USER_ID;
     new_objects.push_back(obj);
   }
   AddNewDetections(new_objects);
+}
+
+void Tracker::Process(const vector<BBox> &objects, int obj_label, vector<int> user_ids){
+    assert(objects.size()==user_ids.size());
+
+    vector<TrackedObject> new_objects;
+    TrackedObject obj;
+    for (size_t i = 0; i < objects.size(); ++i) {
+      const auto &o = objects[i];
+      if (o.label != obj_label)
+        continue;
+      obj.id = NEW_OBJ_PENDING;
+      obj.last_frame = 0;
+      obj.frames_count = 1;
+      obj.rect = o.rect;
+      obj.score = o.score;
+      obj.user_id = user_ids[i];
+      new_objects.push_back(obj);
+    }
+    AddNewDetections(new_objects);
 }
 
 ulong Tracker::GenNewUniqueId() { return std::max(ncount_++, ulong(0)); }
@@ -52,8 +74,10 @@ void Tracker::AddNewDetections(vector<TrackedObject> &new_objects) {
     return;
   }
 
-  for (auto &o : tracked_objects_)
+  for (auto &o : tracked_objects_){
     o.last_frame += 1;
+  }
+
   removed_objects_.clear();
   if (!new_objects.empty()) {
     cv::Mat cost_matrix(tracked_objects_.size(), new_objects.size(), CV_32F);
@@ -63,6 +87,7 @@ void Tracker::AddNewDetections(vector<TrackedObject> &new_objects) {
         ptr[j] = Distance(tracked_objects_[i], new_objects[j]);
       }
     }
+
     auto m = KuhnMunkres().Solve(cost_matrix);
     const float TH = 1.0 - iou_th_;
 
@@ -71,6 +96,7 @@ void Tracker::AddNewDetections(vector<TrackedObject> &new_objects) {
       const float th = cost_matrix.ptr<float>(i)[j];
       if (j < new_objects.size() && th < TH) {
         tracked_objects_[i].rect = new_objects[j].rect;
+        tracked_objects_[i].user_id = new_objects[j].user_id;
         tracked_objects_[i].score = new_objects[j].score;
         tracked_objects_[i].last_frame = 0;
         new_objects[j].id = NEW_OBJ_ADDED;

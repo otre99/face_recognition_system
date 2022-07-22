@@ -1,8 +1,8 @@
 #ifndef IO_UTILS_H_
 #define IO_UTILS_H_
 #include "nlohmann/json.hpp"
-#include "vision/predictor.h"
-#include "vision/tracker.h"
+#include "predictor.h"
+#include "tracker.h"
 #include <memory>
 
 nlohmann::json LoadJSon(const std::string &fpath);

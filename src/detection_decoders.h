@@ -31,6 +31,8 @@ public:
     network_input_size_ = network_input_size;
   };
 
+  virtual string GetName() const = 0;
+
   virtual vector<string> ExpectedLayerNames() const { return {}; }
   void SetLabels(const std::vector<std::string> &lb) { labels_ = lb; }
   std::vector<std::string> GetLabels() const { return labels_; }
@@ -58,6 +60,7 @@ public:
 
   void Init(float scoreTh, float nmsTh,
             const cv::Size &network_input_size = {}) override final;
+  string GetName() const override final { return "ULFD"; }
 
   vector<string> ExpectedLayerNames() const override {
     return {"boxes", "scores"};
@@ -70,17 +73,14 @@ private:
 // RetinaFaceDecoder
 class RetinaFaceDecoder : public DetectionDecoder {
 public:
-  struct FaceLandmarks {
-    cv::Point2f leye, reye;
-    cv::Point2f nose;
-    cv::Point2f lmouth, rmouth;
-  };
   void Init(float scoreTh, float nmsTh,
             const cv::Size &network_input_size = {}) override;
+  string GetName() const override final { return "RetinaFace"; }
 
   void Decode(const vector<cv::Mat> &outRaw, vector<BBox> &objects,
               const vector<string> &onames = {},
               const cv::Size &img_size = {}) override;
+
   vector<string> ExpectedLayerNames() const override {
     return {"boxes", "scores", "landmarks"};
   }

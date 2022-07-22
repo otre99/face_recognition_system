@@ -1,6 +1,6 @@
 #include "io_utils.h"
 #include <fstream>
-#include "vision/opencv_predictor.h"
+#include "opencv_predictor.h"
 using namespace std;
 
 nlohmann::json LoadJSon(const string &fpath) {

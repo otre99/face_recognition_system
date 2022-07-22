@@ -2,9 +2,9 @@
 #define FACEDETECTION_H
 
 #include "./nlohmann/json.hpp"
-#include "vision/detection_decoders.h"
-#include "vision/predictor.h"
-#include "vision/tracker.h"
+#include "detection_decoders.h"
+#include "predictor.h"
+#include "tracker.h"
 #include "face.h"
 
 using namespace std;
@@ -14,6 +14,7 @@ public:
   void Init(const nlohmann::json &conf);
   void Process(const cv::Mat &frame);
   void DetecFaces(const cv::Mat &frame);
+
   vector<Face> DetecFacesAndAlign(const cv::Mat &frame);
 
   const vector<BBox> &GetRecentDetections() const {

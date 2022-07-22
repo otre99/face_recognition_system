@@ -7,26 +7,25 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(OpenCV  4.5 REQUIRED)
 
-set(VISION_SRC
-    vision/predictor.h vision/predictor.cpp
-    vision/opencv_predictor.h vision/opencv_predictor.cpp
-    vision/common_utils.h     vision/common_utils.cpp
-    vision/tracker.h     vision/tracker.cpp
-    vision/kuhnmunkres.h     vision/kuhnmunkres.cpp
-    vision/detection_decoders.h vision/detection_decoders.cpp
+set(COMMON_SRC
+    predictor.h predictor.cpp
+    opencv_predictor.h opencv_predictor.cpp
+    common_utils.h     common_utils.cpp
+    tracker.h     tracker.cpp
+    kuhnmunkres.h     kuhnmunkres.cpp
+    detection_decoders.h detection_decoders.cpp
+    face_detection.h face_detection.cpp
+    io_utils.h io_utils.cpp
+    nlohmann/json.hpp
+    face.cpp face.h
 )
 
-set(MAIN_SRC
-face_detection.h face_detection.cpp
-io_utils.h io_utils.cpp
-)
+#add_executable(face_recognition_system main.cpp ${COMMON_SRC})
+#target_link_libraries(face_recognition_system ${OpenCV_LIBS})
 
 
+#add_executable(dbcreator db_creator.cpp dbmanager.cpp dbmanager.h  ${COMMON_SRC})
+#target_link_libraries(dbcreator ${OpenCV_LIBS})
 
-add_executable(face_recognition_system main.cpp ${VISION_SRC} ${MAIN_SRC})
-target_link_libraries(face_recognition_system ${OpenCV_LIBS})
-
-
-add_executable(dbcreator db_creator.cpp dbmanager.cpp dbmanager.h ${MAIN_SRC} ${VISION_SRC} nlohmann/json.hpp
-face.cpp face.h)
+add_executable(dbcreator test.cpp dbmanager.cpp dbmanager.h  ${COMMON_SRC})
 target_link_libraries(dbcreator ${OpenCV_LIBS})
