@@ -18,6 +18,7 @@ set(COMMON_SRC
     io_utils.h io_utils.cpp
     nlohmann/json.hpp
     face.cpp face.h
+    draw_utils.cpp draw_utils.h
 )
 
 #add_executable(face_recognition_system main.cpp ${COMMON_SRC})

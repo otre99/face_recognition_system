@@ -12,6 +12,7 @@ struct BBox {
 };
 
 struct FaceLandmarks {
+  bool relative_coords;
   cv::Point2f leye, reye;
   cv::Point2f nose;
   cv::Point2f lmouth, rmouth;

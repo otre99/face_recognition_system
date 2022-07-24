@@ -11,22 +11,25 @@ using namespace std;
 
 class FaceDetection {
 public:
-  void Init(const nlohmann::json &conf);
-  void Process(const cv::Mat &frame);
+  bool Init(const nlohmann::json &conf);
+  const std::vector<TrackedObject> &Process(const cv::Mat &frame);
   void DetecFaces(const cv::Mat &frame);
-
-  vector<Face> DetecFacesAndAlign(const cv::Mat &frame);
 
   const vector<BBox> &GetRecentDetections() const {
       return recent_detections_;
   }
 
+  FaceLandmarks GetFaceLandmarks(const TrackedObject &obj, bool use_retinanet=false);
+
+
+
 private:
   vector<BBox> recent_detections_;
   shared_ptr<Predictor> face_detector_{};
   shared_ptr<Predictor> face_landmarks_{};
-  unique_ptr<DetectionDecoder> det_decoder_{};
+  shared_ptr<DetectionDecoder> det_decoder_{};
   Tracker faces_tracker_;
+  vector<int> user_ids_;
 
   int face_label_id_{-1};
 };

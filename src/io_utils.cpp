@@ -53,6 +53,28 @@ shared_ptr<Predictor> PredictorFromJson(const nlohmann::json &conf){
     return result;
 }
 
+std::shared_ptr<DetectionDecoder> DetectionDecoderFromJson(const nlohmann::json &conf)
+{
+    shared_ptr<DetectionDecoder> result;
+    const int input_w = conf.value("input_w", -1);
+    const int input_h = conf.value("input_h", -1);
+    const float obj_th = conf.value("obj_th", 0.5);
+    const float nms_th = conf.value("nms_th", 0.2);
+
+    auto decoder_name = conf.value("decoder", "");
+    if (decoder_name=="RetinaNet"){
+        result.reset(new RetinaFaceDecoder());
+    } else if (decoder_name=="ULFD") {
+        result.reset(new ULFDDecoder());
+    } else {
+        cerr  << "Unknow detection decoder '" << decoder_name << "'" << endl;
+        return {};
+    }
+    result->Init(obj_th,nms_th,{input_w, input_h});
+    return result;
+}
+
+
 void TrackerFromJson(const nlohmann::json &conf, Tracker &tracker) {
 
     const int frames_to_count = conf.value("frames_to_count", 0);

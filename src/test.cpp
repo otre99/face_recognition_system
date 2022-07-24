@@ -3,16 +3,22 @@
 #include <filesystem>
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include "face.h"
-
+#include "draw_utils.h"
 
 using namespace std;
 namespace fs = filesystem;
 
+DrawUtils drawer;
 
-void DrawDetections(cv::Mat &frame, const vector<BBox> &bboxes){
-    for (const auto &box : bboxes){
-        cv::rectangle(frame, box.rect, {255,0,128}, 3);
+void DrawDetections(cv::Mat &frame, const vector<TrackedObject> &bboxes){
+    for (const auto &o : bboxes){
+        drawer.DrawTrackedObj(frame, o);
+    }
+}
+
+void DrawFaces(cv::Mat &frame, const vector<Face> &faces){
+    for (const auto &f : faces){
+        drawer.DrawFace(frame, f);
     }
 }
 
@@ -23,14 +29,23 @@ int main(int argc, char *argv[]) {
     auto data = LoadJSon(argv[1]);
     faceDet.Init(data["face_detection"]);
   }
+  drawer.Init({});
 
-  cv::VideoCapture cap(0);
+  cv::VideoCapture cap("/home/jetson/sample-videos-master/face-demographics-walking-and-pause.mp4");
   cv::Mat frame;
+  vector<TrackedObject> tobjects;
+  vector<Face> faces;
   while (cap.read(frame)){
-    faceDet.DetecFaces(frame);
-    DrawDetections(frame, faceDet.GetRecentDetections());
+    tobjects = faceDet.Process(frame);
+
+    faces.resize(tobjects.size());
+    for (size_t i=0; i<tobjects.size(); ++i){
+        auto l = faceDet.GetFaceLandmarks(tobjects[i], true);
+        faces[i].Init(frame, tobjects[i].rect, l, tobjects[i].id);
+    }
+    DrawFaces(frame,faces);
     cv::imshow("Dets", frame);
-    cv::waitKey(-1);
+    if (cv::waitKey(1)==27) break;
   }
 
   return 0;

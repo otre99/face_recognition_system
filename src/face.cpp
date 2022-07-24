@@ -14,11 +14,19 @@ void Face::CalculateLandmarksAbsCoords(const cv::Rect &det_rect,
                                        const FaceLandmarks &l) {
   const double Rm = 0.5;
   auto tl = det_rect.tl();
-  leye_ = ToAbsCoords(tl, det_rect.width, det_rect.height, l.leye);
-  reye_ = ToAbsCoords(tl, det_rect.width, det_rect.height, l.leye);
-  nose_ = ToAbsCoords(tl, det_rect.width, det_rect.height, l.nose);
-  mouth_ = ToAbsCoords(tl, det_rect.width, det_rect.height,
-                       0.5 * (l.lmouth + l.rmouth));
+  if (l.relative_coords){
+      leye_ = ToAbsCoords(tl, det_rect.width, det_rect.height, l.leye);
+      reye_ = ToAbsCoords(tl, det_rect.width, det_rect.height, l.leye);
+      nose_ = ToAbsCoords(tl, det_rect.width, det_rect.height, l.nose);
+      mouth_ = ToAbsCoords(tl, det_rect.width, det_rect.height,
+                           0.5 * (l.lmouth + l.rmouth));
+  } else {
+      leye_ = l.leye;
+      reye_ = l.reye;
+      nose_ = l.nose;
+      mouth_ = 0.5 * (l.lmouth + l.rmouth);
+  }
+
   // secondary points
   mid_eyes_ = 0.5 * (leye_ + reye_);
   nose_base_ = mouth_ + (mid_eyes_ - mouth_) * Rm;
@@ -63,11 +71,12 @@ cv::Rect Face::GetAlignRectV1(const cv::Rect &frame_rect) {
 
   const double eye_dist = GetDist2DPoints(leye_, reye_);
   const double eye_mouth_dist = GetDist2DPoints(mid_eyes_, mouth_);
+  const double d1 = GetDist2DPoints(nose_base_, mouth_);
 
   float x1 = nose_base_.x - eye_dist * 1.1;
   float x2 = nose_base_.x + eye_dist * 1.1;
   float y1 = nose_base_.y - eye_mouth_dist * 1.3;
-  float y2 = nose_base_.y + eye_mouth_dist * 1.8;
+  float y2 = nose_base_.y + d1 * 1.8;
 
   cv::Rect rect;
   rect.x = x1;

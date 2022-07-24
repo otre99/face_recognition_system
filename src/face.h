@@ -4,11 +4,14 @@
 #include "common_utils.h"
 
 class Face {
+    friend class DrawUtils;
 
 public:
   Face() = default;
   void Init(const cv::Mat &frame, const cv::Rect &det_rect,
             const FaceLandmarks &l, long trackingId = -1);
+
+
 
 private:
   void CalculateLandmarksAbsCoords(const cv::Rect &det_rect,
