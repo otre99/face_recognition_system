@@ -13,7 +13,7 @@ public:
 
 
 
-private:
+//private:
   void CalculateLandmarksAbsCoords(const cv::Rect &det_rect,
                                    const FaceLandmarks &l);
   void CalculateFaceOrientation();

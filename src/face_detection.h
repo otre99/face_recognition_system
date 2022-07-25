@@ -19,11 +19,13 @@ public:
       return recent_detections_;
   }
 
-  FaceLandmarks GetFaceLandmarks(const TrackedObject &obj, bool use_retinanet=false);
-
+  FaceLandmarks GetFaceLandmarks(const cv::Mat &frame, const TrackedObject &obj, bool use_retinanet=false);
+  FaceLandmarks GetFaceLandmarks(const cv::Mat &frame, const vector<cv::Rect> &bboxes);
 
 
 private:
+  FaceLandmarks GetFaceLandmarksFromOnetOutpus(const cv::Rect &rect, const cv::Mat &lands);
+
   vector<BBox> recent_detections_;
   shared_ptr<Predictor> face_detector_{};
   shared_ptr<Predictor> face_landmarks_{};

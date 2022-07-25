@@ -11,7 +11,7 @@ public:
   virtual void Predict(const cv::Mat &img, std::vector<cv::Mat> &outputs,
                        const std::vector<std::string> &output_names = {}) = 0;
   virtual void Predict(const std::vector<cv::Mat> &img,
-                       std::vector<cv::Mat> &outputs,
+                       std::vector<std::vector<cv::Mat>> &outputs,
                        const std::vector<std::string> &output_names = {}) = 0;
 
   void setExplictInputSize(const cv::Size &input_size) {

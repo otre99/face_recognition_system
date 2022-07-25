@@ -33,6 +33,7 @@ inline double Degrees(double rad){
 }
 
 void ScaleRect(cv::Rect &r, float scale);
+void ScaleRect(cv::Rect &r, float sx, float sy);
 cv::Rect RectInsideFrame(const cv::Rect &rect, const cv::Mat &frame);
 inline float Clip(float x) { return std::min(std::max(0.0F, x), 1.0F); }
 

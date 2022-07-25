@@ -21,6 +21,11 @@ set(COMMON_SRC
     draw_utils.cpp draw_utils.h
 )
 
+#set(ESRC
+#    other_code/pose_detector.h
+#    other_code/pose_detector.cpp
+#)
+
 #add_executable(face_recognition_system main.cpp ${COMMON_SRC})
 #target_link_libraries(face_recognition_system ${OpenCV_LIBS})
 

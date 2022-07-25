@@ -75,7 +75,7 @@ class RetinaFaceDecoder : public DetectionDecoder {
 public:
   void Init(float scoreTh, float nmsTh,
             const cv::Size &network_input_size = {}) override;
-  string GetName() const override final { return "RetinaFace"; }
+  string GetName() const override final { return "RETINAFACE"; }
 
   void Decode(const vector<cv::Mat> &outRaw, vector<BBox> &objects,
               const vector<string> &onames = {},

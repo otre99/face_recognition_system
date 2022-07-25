@@ -14,7 +14,7 @@ public:
 
   void Predict(const cv::Mat &img, vector<cv::Mat> &outputs,
                const vector<string> &output_names = {}) override final;
-  void Predict(const vector<cv::Mat> &images, vector<cv::Mat> &outputs,
+  void Predict(const vector<cv::Mat> &images, vector<vector<cv::Mat>> &outputs,
                const vector<string> &output_names = {}) override final;
 
 private:

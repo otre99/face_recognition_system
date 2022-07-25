@@ -62,7 +62,7 @@ std::shared_ptr<DetectionDecoder> DetectionDecoderFromJson(const nlohmann::json 
     const float nms_th = conf.value("nms_th", 0.2);
 
     auto decoder_name = conf.value("decoder", "");
-    if (decoder_name=="RetinaNet"){
+    if (decoder_name=="RETINAFACE"){
         result.reset(new RetinaFaceDecoder());
     } else if (decoder_name=="ULFD") {
         result.reset(new ULFDDecoder());

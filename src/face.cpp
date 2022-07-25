@@ -68,22 +68,9 @@ void Face::CalculateFaceOrientation() {
 }
 
 cv::Rect Face::GetAlignRectV1(const cv::Rect &frame_rect) {
-
-  const double eye_dist = GetDist2DPoints(leye_, reye_);
-  const double eye_mouth_dist = GetDist2DPoints(mid_eyes_, mouth_);
-  const double d1 = GetDist2DPoints(nose_base_, mouth_);
-
-  float x1 = nose_base_.x - eye_dist * 1.1;
-  float x2 = nose_base_.x + eye_dist * 1.1;
-  float y1 = nose_base_.y - eye_mouth_dist * 1.3;
-  float y2 = nose_base_.y + d1 * 1.8;
-
-  cv::Rect rect;
-  rect.x = x1;
-  rect.y = y1;
-  rect.width = x2 - x1 + 1;
-  rect.height = y2 - y1 + 1;
-  return rect & frame_rect;
+    cv::Rect rect = cv::boundingRect(std::vector<cv::Point2f>{leye_, reye_, mouth_});
+    ScaleRect(rect, 1.8, 2.2);
+    return frame_rect&rect;
 }
 
 cv::Point2f Face::ToAbsCoords(const cv::Point2f &ori, int w, int h,
