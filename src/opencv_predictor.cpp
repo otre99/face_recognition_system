@@ -13,24 +13,25 @@ shared_ptr<Predictor> OpenCVPredictor::Create(const string &model_path,
 
 void OpenCVPredictor::Predict(const cv::Mat &img, vector<cv::Mat> &outputs,
                               const vector<string> &output_names) {
-    auto blob = cv::dnn::blobFromImage(img, scale_, input_size_, mean_, swap_ch_, false, CV_32F);
-    net_.setInput(blob);
-    if (output_names.empty()) {
-        net_.forward(outputs);
-    } else {
-        net_.forward(outputs, output_names);
-    }
+  auto blob = cv::dnn::blobFromImage(img, scale_, input_size_, mean_, swap_ch_,
+                                     false, CV_32F);
+  net_.setInput(blob);
+  if (output_names.empty()) {
+    net_.forward(outputs);
+  } else {
+    net_.forward(outputs, output_names);
+  }
 }
 
 void OpenCVPredictor::Predict(const vector<cv::Mat> &images,
-                              vector<vector<cv::Mat> > &outputs,
+                              vector<cv::Mat> &outputs,
                               const vector<string> &output_names) {
 
   auto blob = cv::dnn::blobFromImages(images, scale_, input_size_, mean_,
                                       swap_ch_, false, CV_32F);
   net_.setInput(blob);
   if (output_names.empty()) {
-   net_.forward(outputs,{});
+    net_.forward(outputs);
   } else {
     net_.forward(outputs, output_names);
   }

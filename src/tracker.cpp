@@ -42,24 +42,25 @@ void Tracker::Process(const std::vector<BBox> &objects, int obj_label) {
   AddNewDetections(new_objects);
 }
 
-void Tracker::Process(const vector<BBox> &objects, int obj_label, vector<int> user_ids){
-    assert(objects.size()==user_ids.size());
+void Tracker::Process(const vector<BBox> &objects, int obj_label,
+                      vector<int> user_ids) {
+  assert(objects.size() == user_ids.size());
 
-    vector<TrackedObject> new_objects;
-    TrackedObject obj;
-    for (size_t i = 0; i < objects.size(); ++i) {
-      const auto &o = objects[i];
-      if (o.label != obj_label)
-        continue;
-      obj.id = NEW_OBJ_PENDING;
-      obj.last_frame = 0;
-      obj.frames_count = 1;
-      obj.rect = o.rect;
-      obj.score = o.score;
-      obj.user_id = user_ids[i];
-      new_objects.push_back(obj);
-    }
-    AddNewDetections(new_objects);
+  vector<TrackedObject> new_objects;
+  TrackedObject obj;
+  for (size_t i = 0; i < objects.size(); ++i) {
+    const auto &o = objects[i];
+    if (o.label != obj_label)
+      continue;
+    obj.id = NEW_OBJ_PENDING;
+    obj.last_frame = 0;
+    obj.frames_count = 1;
+    obj.rect = o.rect;
+    obj.score = o.score;
+    obj.user_id = user_ids[i];
+    new_objects.push_back(obj);
+  }
+  AddNewDetections(new_objects);
 }
 
 ulong Tracker::GenNewUniqueId() { return std::max(ncount_++, ulong(0)); }
@@ -74,7 +75,7 @@ void Tracker::AddNewDetections(vector<TrackedObject> &new_objects) {
     return;
   }
 
-  for (auto &o : tracked_objects_){
+  for (auto &o : tracked_objects_) {
     o.last_frame += 1;
   }
 

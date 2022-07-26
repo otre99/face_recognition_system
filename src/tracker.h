@@ -21,7 +21,8 @@ public:
             float iou_th = 0.25);
   void Reset();
   void Process(const vector<BBox> &objects, int obj_label);
-  void Process(const vector<BBox> &objects, int obj_label, vector<int> user_ids);
+  void Process(const vector<BBox> &objects, int obj_label,
+               vector<int> user_ids);
 
   const std::vector<TrackedObject> &GetTrackedObjects() const {
     return tracked_objects_;

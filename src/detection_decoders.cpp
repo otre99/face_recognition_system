@@ -189,7 +189,7 @@ void RetinaFaceDecoder::Decode(const std::vector<cv::Mat> &outRaw,
       cx = landmarks_ptr[i * 10 + 8] * 0.1 * priors_[i].w + priors_[i].cx;
       cy = landmarks_ptr[i * 10 + 9] * 0.1 * priors_[i].h + priors_[i].cy;
       flm.rmouth = {cx * img_size.width, cy * img_size.height};
-      flm.relative_coords=false;
+      flm.relative_coords = false;
       tmp_land.push_back(flm);
     }
   }

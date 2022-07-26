@@ -14,24 +14,18 @@ set(COMMON_SRC
     tracker.h     tracker.cpp
     kuhnmunkres.h     kuhnmunkres.cpp
     detection_decoders.h detection_decoders.cpp
-    face_detection.h face_detection.cpp
+    faces_manager.h faces_manager.cpp
     io_utils.h io_utils.cpp
     nlohmann/json.hpp
     face.cpp face.h
     draw_utils.cpp draw_utils.h
 )
 
-#set(ESRC
-#    other_code/pose_detector.h
-#    other_code/pose_detector.cpp
-#)
 
 #add_executable(face_recognition_system main.cpp ${COMMON_SRC})
 #target_link_libraries(face_recognition_system ${OpenCV_LIBS})
 
 
-#add_executable(dbcreator db_creator.cpp dbmanager.cpp dbmanager.h  ${COMMON_SRC})
-#target_link_libraries(dbcreator ${OpenCV_LIBS})
-
-add_executable(dbcreator test.cpp dbmanager.cpp dbmanager.h  ${COMMON_SRC})
+add_executable(dbcreator db_creator.cpp dbmanager.cpp dbmanager.h  ${COMMON_SRC})
 target_link_libraries(dbcreator ${OpenCV_LIBS})
+
