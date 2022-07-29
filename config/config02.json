@@ -25,12 +25,12 @@
         "models": [
             {
                 "config": "",
-                "weights": "/test_storage/models/RetinaNetResnet50_SIZE320D.onnx",
+                "weights": "/test_storage/models/RetinaNetResnet50_SIZE640D.onnx",
                 "name": "RetinaFace",
                 "type": "detection",
                 "framework": "ONNX",
-                "input_w": 320,
-                "input_h": 320,
+                "input_w": 640,
+                "input_h": 640,
                 "backend": "OCV",
                 "target": "CPU",
                 "decoder": "RETINAFACE",
@@ -82,7 +82,7 @@
         ],
         "tracker": {
             "frames_to_count": 3,
-            "frames_to_discart": 8,
+            "frames_to_discart": 20,
             "tracker_iou": 0.2
         }
     }

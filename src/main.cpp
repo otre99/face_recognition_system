@@ -1,73 +1,147 @@
+#include "dbmanager.h"
+#include "draw_utils.h"
+#include "faces_manager.h"
+#include "io_utils.h"
+#include "recognition_status_tracker.h"
+#include "tracker.h"
+#include <chrono>
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include "opencv_predictor.h"
-#include "face_detection.h"
-#include "tracker.h"
-
 using namespace std;
 
-void Draw(cv::Mat &image, const vector<TrackedObject> &detections) {
-    for (const auto &obj : detections) {
+DrawUtils drawer;
 
-        cv::Scalar color = cv::Scalar(0, 0, 0);
-        float c_mean = cv::mean(color)[0];
-        cv::Scalar txt_color;
-        if (c_mean > 0.5) {
-            txt_color = cv::Scalar(0, 0, 0);
-        } else {
-            txt_color = cv::Scalar(255, 255, 255);
-        }
-        cv::rectangle(image, obj.rect,
-                      cv::Scalar((17 * obj.id) % 256, (7 * obj.id) % 256,
-                                 (37 * obj.id) % 256),
-                      2);
-
-        char text[256];
-        sprintf(text, "id-%ld", obj.id);
-
-
-        int baseLine = 0;
-        cv::Size label_size =
-            cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.4, 1, &baseLine);
-
-        cv::Scalar txt_bk_color = color * 0.7;
-
-        int x = obj.rect.x;
-        int y = obj.rect.y + 1;
-        if (y > image.rows) y = image.rows;
-        cv::rectangle(
-            image,
-            cv::Rect(cv::Point(x, y),
-                     cv::Size(label_size.width, label_size.height + baseLine)),
-            txt_bk_color, -1);
-        cv::putText(image, text, cv::Point(x, y + label_size.height),
-                    cv::FONT_HERSHEY_SIMPLEX, 0.4, txt_color, 1);
-    }
+string GetMsgToDisply(const RecognitionStatusTracker::Data &d) {
+  switch (d.status) {
+  case RecognitionStatusTracker::DOUBTFUL:
+    return "DOUBTFUL";
+  case RecognitionStatusTracker::UNKNOWN:
+    return "UNKNOWN";
+  case RecognitionStatusTracker::PENDING:
+    return "PENDING";
+  default: // RecognitionStatusTracker::KNOWN:
+    return d.faceId;
+  }
 }
 
-int main()
-{
-    /*
-    FaceDetection faceDet;
-    faceDet.Init();
+void Draw(cv::Mat &image, const vector<TrackedObject> &detections,
+          RecognitionStatusTracker &recogTracker, int fps = -1) {
 
-    cv::VideoCapture cap("/home/rccr/REPOS/face_recognition_system/videos/face-demographics-walking.mp4");
-    Tracker tracker;
-    tracker.Init(3,5,0.25);
-
-    cv::Mat frame;
-    vector<cv::Mat> outputs;
-
-
-    while (cap.read(frame)){
-        faceDet.Process(frame);
-        //Draw(frame, tracker.GetTrackedObjects());
-
-
-        cv::imshow("DET", frame);
-        cv::waitKey(-1);
+  if (fps > 0) {
+    drawer.DrawFPS(image, fps);
+  }
+  for (const auto &obj : detections) {
+    if (obj.last_frame == 0) {
+      const auto d = recogTracker.Get(obj.id);
+      drawer.DrawTrackedObj(image, obj, GetMsgToDisply(d));
     }
+  }
+}
 
-    return 0;
-    */
+using Status = RecognitionStatusTracker::Status;
+
+int main(int argc, char *argv[]) {
+  FacesManager facesManager;
+  DBManager dbmanager;
+  string video_input = "/dev/video0";
+  RecognitionStatusTracker recogTracker;
+  {
+    const auto json_data = LoadJSon(argv[1]);
+
+    // faces manager
+    facesManager.Init(json_data["faces_manager"]);
+
+    // db
+    const auto mpath = json_data["db"].get<string>();
+    if (!dbmanager.Open(mpath, false, facesManager.GetEmbeddingLen())) {
+      return -1;
+    }
+    int recog_metric;
+    float recog_low_th, recog_hi_th;
+    recog_metric = json_data.value("recog_metric", 0);
+    recog_low_th = json_data.value("recog_low_th", 0.8);
+    recog_hi_th = json_data.value("recog_hi_th", 1.0);
+    dbmanager.Init(recog_metric, recog_low_th, recog_hi_th);
+
+    // tracker
+    const auto m = json_data["faces_manager"]["tracker"];
+    int life = m.value("frames_to_discart", 0) + 1;
+    recogTracker.Init(life);
+
+    // input video
+    video_input = json_data["video_input"].get<string>();
+  }
+  drawer.Init({});
+
+  cv::VideoCapture cap(video_input);
+  if (!cap.isOpened()) {
+    cerr << "Error opening input video: " << video_input << endl;
+    return -1;
+  }
+
+  double fw = cap.get(cv::CAP_PROP_FRAME_WIDTH);
+  double fh = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
+  bool okw = cap.set(cv::CAP_PROP_FRAME_WIDTH, 1080.0);
+  bool okh = cap.set(cv::CAP_PROP_FRAME_HEIGHT, fh * 1080 / fw);
+  if (!(okw && okh)) {
+    cerr << "Failed to resize input video" << endl;
+  }
+  cv::Mat frame;
+  Face face;
+  FaceLandmarks lands;
+  vector<float> embedding;
+  long nframe = 0;
+  cv::TickMeter tictac;
+  while (cap.read(frame)) {
+
+    tictac.start();
+    const auto tracked_faces = facesManager.Process(frame);
+    for (const auto &obj : tracked_faces) {
+      if (obj.last_frame != 0)
+        continue;
+
+      Status st = RecognitionStatusTracker::PENDING;
+      bool need_recog;
+      if (!recogTracker.Exists(obj.id)) {
+        need_recog = true;
+      } else {
+        st = recogTracker.Get(obj.id).status;
+        need_recog = (st == RecognitionStatusTracker::DOUBTFUL) ||
+                     (st == RecognitionStatusTracker::PENDING);
+      }
+
+      string faceId = {};
+      if (need_recog) {
+        lands = facesManager.GetFaceLandmarksOnet(frame, obj.rect);
+        face.Init(frame, obj.rect, lands, facesManager.GetAlignMethod(),
+                  obj.id);
+        if (facesManager.IsGoodForRegcognition(face)) {
+          auto embedding =
+              facesManager.GetFaceEmbedding(face.GetAlignFace(frame));
+          auto recog = dbmanager.Find(embedding);
+          cout << "ID " << recog.first << " " << recog.second << endl;
+          if (recog.second < dbmanager.LowTh()) {
+            st = RecognitionStatusTracker::KNOWN;
+            faceId = recog.first;
+            std::time_t end_time = std::chrono::system_clock::to_time_t(
+                chrono::system_clock::now());
+            cout << "Face recognized " << faceId
+                 << " Time: " << std::ctime(&end_time) << endl;
+          } else if (recog.second <= dbmanager.HiTh()) {
+            st = RecognitionStatusTracker::DOUBTFUL;
+          } else {
+            st = RecognitionStatusTracker::UNKNOWN;
+          }
+        }
+      }
+      recogTracker.Update(obj.id, st, faceId);
+    }
+    recogTracker.RemoveOldObjects();
+    tictac.stop();
+
+    Draw(frame, tracked_faces, recogTracker, tictac.getFPS());
+    cv::imshow("faces", frame);
+    cv::waitKeyEx(-1);
+    ++nframe;
+  }
 }

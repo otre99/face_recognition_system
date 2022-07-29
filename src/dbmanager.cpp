@@ -4,10 +4,14 @@
 #include <cstring>
 #include <filesystem>
 #include <iostream>
-#include <algorithm>
-
 
 DBManager::~DBManager() { Close(); }
+
+void DBManager::Init(int metric, float lowTh, float hiTh) {
+  metric_ = metric;
+  low_th_ = lowTh;
+  hi_th_ = hiTh;
+}
 
 bool DBManager::Open(const string &mpath, bool write, int32_t embedding_len) {
   if (write == false) {
@@ -38,10 +42,14 @@ bool DBManager::Open(const string &mpath, bool write, int32_t embedding_len) {
     Data dd;
     dd.embedding.resize(embedding_len_);
     cout << "Found " << n << " entries in file " << mpath << endl;
+    iofile_.seekg(sizeof(int32_t), ios::beg);
+    char face_id[KEY_SIZE + 1] = {0};
     for (int i = 0; i < n; ++i) {
-      iofile_.read(reinterpret_cast<char *>(dd.face_id), 32);
+      iofile_.read(reinterpret_cast<char *>(face_id), KEY_SIZE);
       iofile_.read(reinterpret_cast<char *>(dd.embedding.data()),
                    sizeof(float) * embedding_len_);
+
+      dd.face_id = string(reinterpret_cast<const char *>(face_id));
       embedding_data_.push_back(dd);
     }
     return true;
@@ -69,9 +77,9 @@ bool DBManager::Open(const string &mpath, bool write, int32_t embedding_len) {
       return false;
     }
     iofile_.open(mpath, ios::binary | ios::app | ios::out);
-    if (!iofile_.is_open()){
-        cerr << "Failing opening file: '" << mpath << "'" << endl;
-        return false;
+    if (!iofile_.is_open()) {
+      cerr << "Failing opening file: '" << mpath << "'" << endl;
+      return false;
     }
   } else {
     cout << "Creating dataset '" << mpath << "'" << endl;
@@ -112,12 +120,32 @@ bool DBManager::AddData(const char *faceId, const vector<float> &data) {
   iofile_.write(key, KEY_SIZE);
   auto cpy = data;
   Normalize(cpy);
-  iofile_.write(reinterpret_cast<const char *>(cpy.data()), sizeof(float) * embedding_len_);
+  iofile_.write(reinterpret_cast<const char *>(cpy.data()),
+                sizeof(float) * embedding_len_);
 
   return true;
 }
 
-double  DBManager::CalcL2Norm(const vector<float> &x) {
+pair<string, float> DBManager::Find(const vector<float> &x) const {
+  pair<string, float> l;
+  auto funct =
+      metric_ == 0 ? DBManager::CalcEuclideanDist : DBManager::CalcCosineDist;
+  float score = -1.0;
+  string faceId = {};
+
+  float lastValue = numeric_limits<float>::max();
+  for (const auto &e : embedding_data_) {
+    const float rr = funct(e.embedding, x);
+    if (rr < lastValue) {
+      score = rr;
+      faceId = e.face_id;
+      lastValue = rr;
+    }
+  }
+  return {faceId, score};
+}
+
+double DBManager::CalcL2Norm(const vector<float> &x) {
   double r = 0;
   for (auto xi : x) {
     r += xi * xi;
@@ -132,21 +160,21 @@ void DBManager::Normalize(vector<float> &x) {
   }
 }
 
-float DBManager::CalcEuclideanDist(const vector<float> &x, const vector<float> &y)
-{
-    double result=0.0;
-    for (size_t i=0; i<x.size(); ++i){
-        double delta = x[i]-y[i];
-        result += delta*delta;
-    }
-    return sqrt(result);
+float DBManager::CalcEuclideanDist(const vector<float> &x,
+                                   const vector<float> &y) {
+  double result = 0.0;
+  for (size_t i = 0; i < x.size(); ++i) {
+    double delta = x[i] - y[i];
+    result += delta * delta;
+  }
+  return sqrt(result);
 }
 
-float DBManager::CalcCosineDist(const vector<float> &x, const vector<float> &y)
-{
-    double result=0.0;
-    for (size_t i=0; i<x.size(); ++i){
-        result += x[i]*y[i];
-    }
-    return 1.0 - result;
+float DBManager::CalcCosineDist(const vector<float> &x,
+                                const vector<float> &y) {
+  double result = 0.0;
+  for (size_t i = 0; i < x.size(); ++i) {
+    result += x[i] * y[i];
+  }
+  return 1.0 - result;
 }

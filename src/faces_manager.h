@@ -1,5 +1,5 @@
-#ifndef FACE_MANAGER_H
-#define FACE_MANAGER_H
+#ifndef FACE_MANAGER_H_
+#define FACE_MANAGER_H_
 
 #include "./nlohmann/json.hpp"
 #include "detection_decoders.h"
@@ -26,13 +26,14 @@ public:
                                      const cv::Rect &bbox);
   vector<float> GetFaceEmbedding(const cv::Mat &face_img);
   bool IsFrontal(const Face &face) const;
+  bool IsGoodForRegcognition(const Face &face) const;
+  const Tracker &GetFacesTracker() const { return faces_tracker_; }
 
 private:
   FaceLandmarks GetFaceLandmarksFromOnetOutputs(const cv::Rect &rect,
                                                 const float *landmark_data);
 
   pair<float, float> GetPairFromJson(const nlohmann::json &conf);
-
 
   vector<BBox> recent_detections_;
   shared_ptr<Predictor> face_detector_{};
@@ -46,9 +47,10 @@ private:
   int face_label_id_{-1};
   int align_method_{0};
   int embedding_len_{-1};
+  int min_box_side_ = {120};
   pair<float, float> roll_lims_;
   pair<float, float> yaw_lims_;
   pair<float, float> pitch_lims_;
 };
 
-#endif // FACE_MANAGER_H
+#endif // FACE_MANAGER_H_

@@ -1,5 +1,5 @@
-#ifndef FACE_H
-#define FACE_H
+#ifndef FACE_H_
+#define FACE_H_
 
 #include "common_utils.h"
 
@@ -44,4 +44,4 @@ public:
   double FindSlant(double ln, double lf, double tita);
 };
 
-#endif // FACE_H
+#endif // FACE_H_

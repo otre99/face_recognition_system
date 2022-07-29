@@ -3,6 +3,8 @@
 void DrawUtils::Init(const cv::Size &frameSize) {
   label_size_ = cv::getTextSize(" Y: -360 ", cv::FONT_HERSHEY_SIMPLEX, 0.4, 1,
                                 &baseline_);
+  title_size_ = cv::getTextSize(" FPS: 9999 ", cv::FONT_HERSHEY_SIMPLEX, 0.4, 1,
+                                &baseline_);
 }
 
 void DrawUtils::DrawFace(cv::Mat &frame, const Face &face) {
@@ -11,7 +13,6 @@ void DrawUtils::DrawFace(cv::Mat &frame, const Face &face) {
   int x1 = box.x;
   int y1 = box.y;
   int x2 = x1 + box.width;
-  int y2 = y1 + box.height;
   int xl = x2 + line_thickness_;
   int lh = label_size_.height + baseline_;
   int yl = y1 - label_size_.height;
@@ -32,12 +33,32 @@ void DrawUtils::DrawFace(cv::Mat &frame, const Face &face) {
   cv::circle(frame, face.mouth_, 3, landmarks_color_, -1, cv::FILLED);
 }
 
-void DrawUtils::DrawTrackedObj(cv::Mat &frame, const TrackedObject &obj) {
-  cv::rectangle(frame, obj.rect, line_color_, line_thickness_, cv::LINE_8);
-  int x1 = obj.rect.x;
-  int y1 = obj.rect.y;
-  int x2 = x1 + obj.rect.width;
-  int y2 = y1 + obj.rect.height;
-  cv::putText(frame, "ID: " + std::to_string(obj.id), {x2, y1},
-              cv::FONT_HERSHEY_SIMPLEX, 0.4, line_thickness_);
+void DrawUtils::DrawTrackedObj(cv::Mat &frame, const TrackedObject &obj,
+                               const string &msg) {
+  const cv::Rect &box = obj.rect;
+  cv::rectangle(frame, box, line_color_, line_thickness_, cv::LINE_8);
+  int x1 = box.x;
+  int y1 = box.y;
+  int x2 = x1 + box.width;
+  int xl = x2 + line_thickness_;
+  int lh = label_size_.height + baseline_;
+  int yl = y1 - label_size_.height;
+
+  const int n = msg.empty() ? 1 : 2;
+  cv::rectangle(frame, {xl, yl, label_size_.width, n * lh}, {255, 255, 255},
+                -1);
+  cv::putText(frame, " ID: " + std::to_string(obj.id), {x2, y1},
+              cv::FONT_HERSHEY_SIMPLEX, 0.4, 1);
+  if (n == 2) {
+    cv::putText(frame, " " + msg, {x2, y1 + lh}, cv::FONT_HERSHEY_SIMPLEX, 0.4,
+                1);
+  }
+}
+
+void DrawUtils::DrawFPS(cv::Mat &frame, int fps) {
+  cv::rectangle(frame,
+                {0, 0, title_size_.width, title_size_.height + baseline_},
+                {255, 255, 255}, -1);
+  cv::putText(frame, "FPS: " + std::to_string(fps), {1, title_size_.height},
+              cv::FONT_HERSHEY_SIMPLEX, 0.4, 1);
 }

@@ -19,13 +19,14 @@ set(COMMON_SRC
     nlohmann/json.hpp
     face.cpp face.h
     draw_utils.cpp draw_utils.h
+    dbmanager.cpp dbmanager.h
 )
 
 
-#add_executable(face_recognition_system main.cpp ${COMMON_SRC})
-#target_link_libraries(face_recognition_system ${OpenCV_LIBS})
+add_executable(face_recognition_system main.cpp recognition_status_tracker.cpp recognition_status_tracker.h ${COMMON_SRC})
+target_link_libraries(face_recognition_system ${OpenCV_LIBS})
 
-
-add_executable(dbcreator db_creator.cpp dbmanager.cpp dbmanager.h  ${COMMON_SRC})
+add_executable(dbcreator db_creator.cpp ${COMMON_SRC})
 target_link_libraries(dbcreator ${OpenCV_LIBS})
 
+#add_executable(embedding_matrix embedding_matrix.cpp dbmanager.cpp dbmanager.h)

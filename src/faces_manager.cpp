@@ -22,21 +22,26 @@ bool FacesManager::Init(const nlohmann::json &conf) {
   align_method_ = conf.value("align_method", 0);
   cout << "Align method  : " << align_method_ << endl;
 
+  min_box_side_ = conf.value("min_box_side", -1);
+  cout << "Min. box side : " << min_box_side_ << endl;
+
   face_label_id_ = conf.value("face_label_id", 1);
   cout << "Face label id : " << face_label_id_ << endl;
 
   embedding_len_ = conf.value("embedding_len", -1);
   cout << "Embedding len : " << embedding_len_ << endl;
 
-
   roll_lims_ = GetPairFromJson(conf["roll_lims"]);
-  cout << "Roll lims     : [ " << roll_lims_.first << " , " << roll_lims_.second << "] " << endl;
+  cout << "Roll lims     : [ " << roll_lims_.first << " , " << roll_lims_.second
+       << "] " << endl;
 
   pitch_lims_ = GetPairFromJson(conf["pitch_lims"]);
-  cout << "Pitch lims    : [ " << pitch_lims_.first << " , " << pitch_lims_.second << "] " << endl;
+  cout << "Pitch lims    : [ " << pitch_lims_.first << " , "
+       << pitch_lims_.second << "] " << endl;
 
   yaw_lims_ = GetPairFromJson(conf["roll_lims"]);
-  cout << "Yaw lims      : [ " << yaw_lims_.first << " , " << yaw_lims_.second << "] " << endl;
+  cout << "Yaw lims      : [ " << yaw_lims_.first << " , " << yaw_lims_.second
+       << "] " << endl;
 
   cout << "FacesManager setting up ... DONE" << endl;
   return true;
@@ -96,9 +101,8 @@ FacesManager::GetFaceLandmarksFromOnetOutputs(const cv::Rect &rect,
   return l;
 }
 
-pair<float, float> FacesManager::GetPairFromJson(const nlohmann::json &conf)
-{
-    return {conf[0].get<float>(), conf[1].get<float>()};
+pair<float, float> FacesManager::GetPairFromJson(const nlohmann::json &conf) {
+  return {conf[0].get<float>(), conf[1].get<float>()};
 }
 
 vector<FaceLandmarks>
@@ -133,12 +137,15 @@ vector<float> FacesManager::GetFaceEmbedding(const cv::Mat &face_img) {
   return vector<float>(o[0].ptr<float>(0), o[0].ptr<float>(0) + o[0].total());
 }
 
-bool FacesManager::IsFrontal(const Face &face) const
-{
-    const float r = face.GetRoll();
-    const float p = face.GetPitch();
-    const float y = face.GetYaw();
-    return (roll_lims_.first <= r)&&(r <= roll_lims_.second) &&
-           (pitch_lims_.first <= p)&&(p <= pitch_lims_.second) &&
-           (yaw_lims_.first <= y)&&(y <= yaw_lims_.second);
+bool FacesManager::IsFrontal(const Face &face) const {
+  const float r = face.GetRoll();
+  const float p = face.GetPitch();
+  const float y = face.GetYaw();
+  return (roll_lims_.first <= r) && (r <= roll_lims_.second) &&
+         (pitch_lims_.first <= p) && (p <= pitch_lims_.second) &&
+         (yaw_lims_.first <= y) && (y <= yaw_lims_.second);
+}
+
+bool FacesManager::IsGoodForRegcognition(const Face &face) const {
+  return IsFrontal(face) && (face.det_rect_.width >= min_box_side_);
 }

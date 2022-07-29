@@ -11,19 +11,29 @@ void Normalize(vector<float> &x);
 
 class DBManager {
   static const int KEY_SIZE = 32;
+
+public:
   struct Data {
-    char *face_id[KEY_SIZE];
+    string face_id;
     vector<float> embedding;
   };
 
-public:
   DBManager() = default;
+  void Init(int metric, float lowTh, float hiTh);
   bool Open(const string &mpath, bool write = false,
             int32_t embedding_len = -1);
   void Close();
-
   bool AddData(const char *faceId, const vector<float> &data);
+  pair<string, float> Find(const vector<float> &x) const;
+  float LowTh() const { return low_th_; }
+  float HiTh() const { return hi_th_; }
+
   ~DBManager();
+
+  const vector<Data> &GetEmbeddingData() const { return embedding_data_; }
+  static float CalcEuclideanDist(const vector<float> &x,
+                                 const vector<float> &y);
+  static float CalcCosineDist(const vector<float> &x, const vector<float> &y);
 
 private:
   fstream iofile_;
@@ -32,9 +42,9 @@ private:
 
   double CalcL2Norm(const vector<float> &x);
   void Normalize(vector<float> &x);
-  float CalcEuclideanDist(const vector<float> &x, const vector<float> &y);
-  float CalcCosineDist(const vector<float> &x, const vector<float> &y);
-
+  int metric_{0};
+  float low_th_{0.8};
+  float hi_th_{1.0};
 };
 
 #endif // DBMANAGER_H_

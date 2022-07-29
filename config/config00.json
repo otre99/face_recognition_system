@@ -1,32 +1,46 @@
 {
-    "txt_file": "/test_storage/image_samples/faces.txt",
+    "txt_file": "/test_storage/image_samples/lst.txt",
     "db": "/test_storage/db.dataset",
+    "video_input": "/home/jetson/sample-videos-master/face-demographics-walking-and-pause.mp4",
+    "recog_metric": 0,
+    "recog_low_th": 0.8,
+    "recog_hi_th": 1.0,
     "faces_manager": {
         "face_label_id": 1,
         "embedding_len": 512,
-        "align_method": 0,
-        "pitch_lims": [-15, 15],
-        "roll_lims": [-15, 15],
-        "yaw_lims": [-15, 15],
+        "align_method": 1,
+        "pitch_lims": [
+            -15,
+            15
+        ],
+        "roll_lims": [
+            -15,
+            15
+        ],
+        "yaw_lims": [
+            -15,
+            15
+        ],
+        "min_box_side": 60,
         "models": [
             {
                 "config": "",
-                "weights": "/test_storage/models/RetinaNetResnet50_SIZE320D.onnx",
-                "name": "RetinaFace",
+                "weights": "/test_storage/models/RFB-320.onnx",
+                "name": "RBF320",
                 "type": "detection",
                 "framework": "ONNX",
                 "input_w": 320,
-                "input_h": 320,
+                "input_h": 240,
                 "backend": "OCV",
                 "target": "CPU",
-                "decoder": "RETINAFACE",
-                "scale": 1.0,
-                "mc1": 104,
-                "mc2": 117,
-                "mc3": 123,
+                "decoder": "ULFD",
+                "scale": 0.0078125,
+                "mc1": 127.5,
+                "mc2": 127.5,
+                "mc3": 127.5,
                 "obj_th": 0.5,
                 "nms_th": 0.2,
-                "swap_ch": false,
+                "swap_ch": true,
                 "ncls": 2,
                 "labels": [
                     "none",
@@ -70,25 +84,6 @@
             "frames_to_count": 3,
             "frames_to_discart": 8,
             "tracker_iou": 0.2
-        }
-    },
-    "face_embedding": {
-        "model": {
-            "config": "",
-            "weights": "",
-            "name": "varg",
-            "framework": "ONNX",
-            "input_w": 160,
-            "input_h": 160,
-            "backend": "OCV",
-            "target": "CPU",
-            "decoder": "retinaface",
-            "mc1": 104.0,
-            "mc2": 117.0,
-            "mc3": 123.0,
-            "obj_th": 0.5,
-            "nms_th": 0.2,
-            "swap_ch": false
         }
     }
 }
