@@ -6,6 +6,7 @@
 #include "tracker.h"
 #include <chrono>
 #include <iostream>
+#include "image_saver.h"
 #include <opencv2/opencv.hpp>
 using namespace std;
 
@@ -92,6 +93,7 @@ int main(int argc, char *argv[]) {
   vector<float> embedding;
   long nframe = 0;
   cv::TickMeter tictac;
+  ImageSaver imgSaver;
   while (cap.read(frame)) {
 
     tictac.start();
@@ -127,10 +129,13 @@ int main(int argc, char *argv[]) {
                 chrono::system_clock::now());
             cout << "Face recognized " << faceId
                  << " Time: " << std::ctime(&end_time) << endl;
+            imgSaver.EnqueueImage(face.GetAlignFace(frame), std::to_string(nframe)+".jpg");
           } else if (recog.second <= dbmanager.HiTh()) {
             st = RecognitionStatusTracker::DOUBTFUL;
           } else {
             st = RecognitionStatusTracker::UNKNOWN;
+              cout << facesManager.GetAlignMethod() << endl;
+            imgSaver.EnqueueImage(face.GetAlignFace(frame), std::to_string(nframe)+".jpg");
           }
         }
       }
@@ -141,7 +146,7 @@ int main(int argc, char *argv[]) {
 
     Draw(frame, tracked_faces, recogTracker, tictac.getFPS());
     cv::imshow("faces", frame);
-    cv::waitKeyEx(-1);
+    cv::waitKeyEx(1);
     ++nframe;
   }
 }
