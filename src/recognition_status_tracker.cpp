@@ -14,6 +14,10 @@ void RecognitionStatusTracker::Update(long tracker_id,
   }
 }
 
+void RecognitionStatusTracker::UpdateLife(long tracker_id) {
+  data_[tracker_id].life = life_;
+}
+
 bool RecognitionStatusTracker::Exists(long tracker_id) const {
   return data_.find(tracker_id) != data_.end();
 }

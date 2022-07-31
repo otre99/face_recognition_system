@@ -1,12 +1,12 @@
 #include "dbmanager.h"
 #include "draw_utils.h"
 #include "faces_manager.h"
+#include "image_saver.h"
 #include "io_utils.h"
 #include "recognition_status_tracker.h"
 #include "tracker.h"
 #include <chrono>
 #include <iostream>
-#include "image_saver.h"
 #include <opencv2/opencv.hpp>
 using namespace std;
 
@@ -40,6 +40,7 @@ void Draw(cv::Mat &image, const vector<TrackedObject> &detections,
 }
 
 using Status = RecognitionStatusTracker::Status;
+using namespace std::chrono;
 
 int main(int argc, char *argv[]) {
   FacesManager facesManager;
@@ -112,8 +113,8 @@ int main(int argc, char *argv[]) {
                      (st == RecognitionStatusTracker::PENDING);
       }
 
-      string faceId = {};
       if (need_recog) {
+        string faceId = {};
         lands = facesManager.GetFaceLandmarksOnet(frame, obj.rect);
         face.Init(frame, obj.rect, lands, facesManager.GetAlignMethod(),
                   obj.id);
@@ -121,32 +122,44 @@ int main(int argc, char *argv[]) {
           auto embedding =
               facesManager.GetFaceEmbedding(face.GetAlignFace(frame));
           auto recog = dbmanager.Find(embedding);
-          cout << "ID " << recog.first << " " << recog.second << endl;
+
           if (recog.second < dbmanager.LowTh()) {
             st = RecognitionStatusTracker::KNOWN;
             faceId = recog.first;
-            std::time_t end_time = std::chrono::system_clock::to_time_t(
-                chrono::system_clock::now());
-            cout << "Face recognized " << faceId
-                 << " Time: " << std::ctime(&end_time) << endl;
-            imgSaver.EnqueueImage(face.GetAlignFace(frame), std::to_string(nframe)+".jpg");
+            time_t currTime = system_clock::to_time_t(system_clock::now());
+            cout << "KNOWN_FACE FaceId: '" << faceId
+                 << "' Time: " << put_time(localtime(&currTime), "%FT%T%z")
+                 << " RecogTh: " << recog.second << endl;
+
+            imgSaver.EnqueueImage(face.GetAlignFace(frame),
+                                  std::to_string(nframe) + ".jpg");
           } else if (recog.second <= dbmanager.HiTh()) {
             st = RecognitionStatusTracker::DOUBTFUL;
+            faceId = recog.first;
+            cerr << "DOUBTFUL_FACE FaceId: '" << faceId
+                 << "' RecogTh: " << recog.second << endl;
           } else {
             st = RecognitionStatusTracker::UNKNOWN;
-              cout << facesManager.GetAlignMethod() << endl;
-            imgSaver.EnqueueImage(face.GetAlignFace(frame), std::to_string(nframe)+".jpg");
+            time_t currTime = system_clock::to_time_t(system_clock::now());
+            cout << "UNKNOWN_FACE Time: "
+                 << put_time(localtime(&currTime), "%FT%T%z")
+                 << " RecogTh: " << recog.second << endl;
+
+            imgSaver.EnqueueImage(face.GetAlignFace(frame),
+                                  std::to_string(nframe) + ".jpg");
           }
         }
+        recogTracker.Update(obj.id, st, faceId);
+      } else {
+        recogTracker.UpdateLife(obj.id);
       }
-      recogTracker.Update(obj.id, st, faceId);
     }
     recogTracker.RemoveOldObjects();
     tictac.stop();
 
     Draw(frame, tracked_faces, recogTracker, tictac.getFPS());
     cv::imshow("faces", frame);
-    cv::waitKeyEx(1);
+    cv::waitKeyEx(-1);
     ++nframe;
   }
 }

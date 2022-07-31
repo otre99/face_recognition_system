@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  cv::Mat dp_img(cv::Size(640, 320), CV_8UC3);
+  cv::Mat dp_img(cv::Size(2*640, 2*320), CV_8UC3, cv::Scalar::all(0.0));
 
   bool debug = true;
   while (ifile >> face_id >> img_name) {
@@ -90,10 +90,9 @@ int main(int argc, char *argv[]) {
     }
 
     if (debug) {
-      cv::resize(face.GetAlignFace(image), dp_img({320, 0, 320, 320}),
-                 {320, 320});
+      cv::resize(face.GetAlignFace(image), dp_img({640+160, 160, 320, 320}), {320, 320});
       DrawLandmarks(image, face);
-      cv::resize(image(face_rect), dp_img({0, 0, 320, 320}), {320, 320});
+      cv::resize(image(face_rect), dp_img({160, 160, 320, 320}), {320, 320});
 
       cv::imshow("faces", dp_img);
       cv::waitKey(-1);

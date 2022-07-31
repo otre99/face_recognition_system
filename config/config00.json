@@ -8,7 +8,7 @@
     "faces_manager": {
         "face_label_id": 1,
         "embedding_len": 512,
-        "align_method": 1,
+        "align_method": 0,
         "pitch_lims": [
             -15,
             15
@@ -21,7 +21,7 @@
             -15,
             15
         ],
-        "min_box_side": 60,
+        "min_box_side": 70,
         "models": [
             {
                 "config": "",
@@ -82,7 +82,7 @@
         ],
         "tracker": {
             "frames_to_count": 3,
-            "frames_to_discart": 8,
+            "frames_to_discart": 15,
             "tracker_iou": 0.2
         }
     }

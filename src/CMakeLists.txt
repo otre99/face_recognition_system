@@ -23,8 +23,12 @@ set(COMMON_SRC
 )
 
 
-add_executable(face_recognition_system main.cpp recognition_status_tracker.cpp recognition_status_tracker.h ${COMMON_SRC})
-target_link_libraries(face_recognition_system ${OpenCV_LIBS})
+add_executable(face_recognition_system
+    main.cpp
+    recognition_status_tracker.cpp recognition_status_tracker.h
+    image_saver.cpp image_saver.h
+    ${COMMON_SRC})
+target_link_libraries(face_recognition_system ${OpenCV_LIBS} pthread)
 
 add_executable(dbcreator db_creator.cpp ${COMMON_SRC})
 target_link_libraries(dbcreator ${OpenCV_LIBS})

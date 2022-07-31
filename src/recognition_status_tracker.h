@@ -17,6 +17,7 @@ public:
   void Init(int life);
   void Update(long tracker_id, RecognitionStatusTracker::Status status,
               const string &faceId);
+  void UpdateLife(long tracker_id);
   bool Exists(long tracker_id) const;
   Data Get(long id) const;
   void RemoveOldObjects();
