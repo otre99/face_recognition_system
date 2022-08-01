@@ -20,7 +20,7 @@ public:
   void UpdateLife(long tracker_id);
   bool Exists(long tracker_id) const;
   Data Get(long id) const;
-  void RemoveOldObjects();
+  void Remove(long tracker_id);
 
 private:
   std::unordered_map<long, Data> data_;

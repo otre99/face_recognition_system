@@ -35,4 +35,7 @@ void SquareRect(cv::Rect &r, int mode = 2);
 cv::Rect RectInsideFrame(const cv::Rect &rect, const cv::Mat &frame);
 inline float Clip(float x) { return std::min(std::max(0.0F, x), 1.0F); }
 
+double GetScaleFactorForResize(const cv::Size &srcSize,
+                               const cv::Size &dstSize);
+
 #endif // COMMON_UTILS_H_

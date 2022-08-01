@@ -40,3 +40,10 @@ void SquareRect(cv::Rect &r, int mode) {
 cv::Rect RectInsideFrame(const cv::Rect &rect, const cv::Mat &frame) {
   return rect & cv::Rect{0, 0, frame.cols, frame.rows};
 }
+
+double GetScaleFactorForResize(const cv::Size &srcSize,
+                               const cv::Size &dstSize) {
+  double w = srcSize.width;
+  double h = srcSize.height;
+  return std::min(dstSize.width / w, dstSize.height / h);
+}

@@ -1,23 +1,36 @@
 #include "face.h"
 #include <cmath>
 
+using namespace std;
+
+const cv::Point2f Face::LPTS[5] = {
+    {30.2946 / 96, 51.6963 / 112}, // left eye
+    {65.5318 / 96, 51.5014 / 112}, // right eye
+    {48.0252 / 96, 71.7366 / 112}, // nose tip
+    {33.5493 / 96, 92.3655 / 112}, // left lip corner
+    {62.7299 / 96, 92.2041 / 112}  // right lip corner
+};
+
 void Face::Init(const cv::Mat &frame, const cv::Rect &det_rect,
                 const FaceLandmarks &l, int align_method, long trackingId) {
   CalculateLandmarksAbsCoords(det_rect, l);
+  const cv::Rect frame_rect(0,0,frame.cols, frame.rows);
   align_method_ = align_method;
   switch (align_method_) {
   case 0:
-    align_rect_ = det_rect;
+    align_rect_ = det_rect&frame_rect;
     break;
   case 1:
     align_rect_ = GetAlignRectV1({0, 0, frame.cols, frame.rows});
     break;
   default:
-    align_rect_ = det_rect;
+      align_rect_ = det_rect;
+      ScaleRect(align_rect_, 2);
+      align_rect_ &=frame_rect;
     break;
   }
   CalculateFaceOrientation();
-  det_rect_ = det_rect;
+  det_rect_ = det_rect&frame_rect;
   tracker_id_ = trackingId;
 }
 
@@ -27,6 +40,9 @@ cv::Mat Face::GetAlignFace(const cv::Mat &frame) {
   case 1:
     return frame(align_rect_);
     break;
+  case 2:
+      return GetFaceAffineTransfor(frame);
+      break;
   default:
     return frame(align_rect_);
     break;
@@ -41,12 +57,15 @@ void Face::CalculateLandmarksAbsCoords(const cv::Rect &det_rect,
     leye_ = ToAbsCoords(tl, det_rect.width, det_rect.height, l.leye);
     reye_ = ToAbsCoords(tl, det_rect.width, det_rect.height, l.leye);
     nose_ = ToAbsCoords(tl, det_rect.width, det_rect.height, l.nose);
-    mouth_ = ToAbsCoords(tl, det_rect.width, det_rect.height,
-                         0.5 * (l.lmouth + l.rmouth));
+    lmouth_ = ToAbsCoords(tl, det_rect.width, det_rect.height, l.lmouth);
+    rmouth_ = ToAbsCoords(tl, det_rect.width, det_rect.height, l.rmouth);
+    mouth_ = 0.5 * (l.lmouth + l.rmouth);
   } else {
     leye_ = l.leye;
     reye_ = l.reye;
     nose_ = l.nose;
+    lmouth_ = l.lmouth;
+    rmouth_ = l.rmouth;
     mouth_ = 0.5 * (l.lmouth + l.rmouth);
   }
 
@@ -91,10 +110,37 @@ void Face::CalculateFaceOrientation() {
 }
 
 cv::Rect Face::GetAlignRectV1(const cv::Rect &frame_rect) {
-  cv::Rect rect =
-      cv::boundingRect(std::vector<cv::Point2f>{leye_, reye_, mouth_});
-  ScaleRect(rect, 1.9, 2.3);
-  return frame_rect & rect;
+
+    cv::Point2f mid_eye = 0.5*(leye_+reye_);
+    float wside = GetDist2DPoints(leye_, reye_)*2.7;
+    cv::Rect rect;
+    rect.x = mid_eye.x - wside/2;
+    float x2 = mid_eye.x + wside/2;
+    float hside = GetDist2DPoints(mid_eye, mouth_);
+    rect.y = mid_eye.y - 1.27*hside;
+    float y2 = mouth_.y + 0.48*hside;
+
+    rect.width = x2-rect.x;
+    rect.height = y2-rect.y;
+    return frame_rect & rect;
+}
+
+cv::Mat Face::GetFaceAffineTransfor(const cv::Mat &frame) {
+  const cv::Point2f tl = align_rect_.tl();
+  const vector<cv::Point2f> srcPts = {leye_ - tl,
+                                      reye_ - tl,
+                                      mouth_-tl
+                                      };
+  const int side = (align_rect_.width + align_rect_.height) / 2;
+  const vector<cv::Point2f> dstPts = {
+      LPTS[0] * side,
+      LPTS[1] * side,
+      0.5*(LPTS[3] + LPTS[4])* side,
+      };
+  const cv::Mat warp_mat = cv::getAffineTransform(srcPts, dstPts);
+  cv::Mat result({side, side});
+  cv::warpAffine(frame(align_rect_), result, warp_mat, {side, side});
+  return result;
 }
 
 cv::Point2f Face::ToAbsCoords(const cv::Point2f &ori, int w, int h,

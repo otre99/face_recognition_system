@@ -23,6 +23,12 @@ set(COMMON_SRC
 )
 
 
+set(TEST_SRC
+    other_code/pose_detector.cpp
+    other_code/pose_detector.h
+)
+
+
 add_executable(face_recognition_system
     main.cpp
     recognition_status_tracker.cpp recognition_status_tracker.h
@@ -30,7 +36,12 @@ add_executable(face_recognition_system
     ${COMMON_SRC})
 target_link_libraries(face_recognition_system ${OpenCV_LIBS} pthread)
 
-add_executable(dbcreator db_creator.cpp ${COMMON_SRC})
+add_executable(dbcreator
+    db_creator.cpp
+    ${TEST_SRC}
+    ${COMMON_SRC})
+
+
 target_link_libraries(dbcreator ${OpenCV_LIBS})
 
 #add_executable(embedding_matrix embedding_matrix.cpp dbmanager.cpp dbmanager.h)

@@ -7,6 +7,8 @@ class Face {
   friend class DrawUtils;
 
 public:
+  static const cv::Point2f LPTS[5];
+
   Face() = default;
   void Init(const cv::Mat &frame, const cv::Rect &det_rect,
             const FaceLandmarks &l, int align_method, long trackingId = -1);
@@ -25,6 +27,7 @@ public:
                                    const FaceLandmarks &l);
   void CalculateFaceOrientation();
   cv::Rect GetAlignRectV1(const cv::Rect &frame_rect);
+  cv::Mat GetFaceAffineTransfor(const cv::Mat &frame);
 
   // data
   long tracker_id_;
@@ -32,7 +35,7 @@ public:
   cv::Rect det_rect_, align_rect_;
   double yaw_, roll_, pitch_;
   cv::Point2f leye_, reye_;
-  cv::Point2f mouth_;
+  cv::Point2f mouth_, lmouth_, rmouth_;
   cv::Point2f nose_;
   cv::Point2f nose_base_;
   cv::Point2f mid_eyes_;

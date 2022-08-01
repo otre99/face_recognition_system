@@ -65,18 +65,23 @@ void FacesManager::DetecFaces(const cv::Mat &frame) {
 FaceLandmarks
 FacesManager::GetFaceLandmarksRetinaFace(const cv::Mat &frame,
                                          const TrackedObject &obj) {
-  if (det_decoder_->GetName() == "RETINAFACE") {
-    auto ptr = dynamic_cast<RetinaFaceDecoder *>(det_decoder_.get());
+
+    const auto lands = GetRecentRetinaFaceLandmarks();
     const int ii = obj.user_id;
     if (obj.last_frame != 0) {
-      throw "GetFaceLandmarksRetinaFace(): RetinaNet face landmarks output is "
-            "only available for recent detections ";
-    } else {
-      return ptr->landmarks_[ii];
+        throw "GetFaceLandmarksRetinaFace(): RetinaNet face landmarks output is "
+              "only available for recent detections ";
     }
-  }
-  throw "GetFaceLandmarksRetinaFace(): face landmarks from RetinaFace are only "
-        "available when RetinaFace detector is used";
+    return lands[ii];
+}
+
+vector<FaceLandmarks> &FacesManager::GetRecentRetinaFaceLandmarks() const{
+    if (det_decoder_->GetName() == "RETINAFACE") {
+        auto ptr = dynamic_cast<RetinaFaceDecoder *>(det_decoder_.get());
+        return ptr->landmarks_;
+    }
+    throw "GetRecentRetinaFaceLandmarks(): face landmarks from RetinaFace are only "
+          "available when RetinaFace detector is used";
 }
 
 FaceLandmarks
@@ -127,7 +132,7 @@ FacesManager::GetFaceLandmarksOnet(const cv::Mat &frame,
 FaceLandmarks FacesManager::GetFaceLandmarksOnet(const cv::Mat &frame,
                                                  const cv::Rect &bbox) {
   vector<cv::Mat> outputs;
-  face_landmarks_->Predict(frame(bbox), outputs, {"landmarks"});
+    face_landmarks_->Predict(frame(RectInsideFrame(bbox, frame)), outputs, {"landmarks"});
   return GetFaceLandmarksFromOnetOutputs(bbox, outputs[0].ptr<float>(0));
 }
 

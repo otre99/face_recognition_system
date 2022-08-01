@@ -4,18 +4,18 @@
     "video_input": "/home/jetson/sample-videos-master/face-demographics-walking-and-pause.mp4",
     "recog_metric": 0,
     "recog_low_th": 0.8,
-    "recog_hi_th": 1.0,
+    "recog_hi_th": 1.1,
     "faces_manager": {
         "face_label_id": 1,
         "embedding_len": 512,
-        "align_method": 0,
+        "align_method": 2,
         "pitch_lims": [
             -15,
-            15
+            25
         ],
         "roll_lims": [
-            -15,
-            15
+            -25,
+            25
         ],
         "yaw_lims": [
             -15,
@@ -25,12 +25,12 @@
         "models": [
             {
                 "config": "",
-                "weights": "/test_storage/models/RetinaNetResnet50_SIZE320D.onnx",
+                "weights": "/test_storage/models/RetinaNetResnet50_SIZE640D.onnx",
                 "name": "RetinaFace",
                 "type": "detection",
                 "framework": "ONNX",
-                "input_w": 320,
-                "input_h": 320,
+                "input_w": 640,
+                "input_h": 640,
                 "backend": "OCV",
                 "target": "CPU",
                 "decoder": "RETINAFACE",
@@ -41,6 +41,7 @@
                 "obj_th": 0.5,
                 "nms_th": 0.2,
                 "swap_ch": false,
+                "keep_aspect_ratio": true,
                 "ncls": 2,
                 "labels": [
                     "none",

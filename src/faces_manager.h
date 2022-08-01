@@ -20,6 +20,8 @@ public:
 
   FaceLandmarks GetFaceLandmarksRetinaFace(const cv::Mat &frame,
                                            const TrackedObject &obj);
+  vector<FaceLandmarks> &GetRecentRetinaFaceLandmarks() const;
+
   vector<FaceLandmarks> GetFaceLandmarksOnet(const cv::Mat &frame,
                                              const vector<cv::Rect> &bboxes);
   FaceLandmarks GetFaceLandmarksOnet(const cv::Mat &frame,

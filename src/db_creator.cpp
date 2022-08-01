@@ -44,9 +44,14 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  cv::Mat dp_img(cv::Size(2*640, 2*320), CV_8UC3, cv::Scalar::all(0.0));
+  cv::Mat dp_img(cv::Size(2 * 640, 2 * 320), CV_8UC3, cv::Scalar::all(0.0));
 
-  bool debug = true;
+  bool debug = false;
+  if (argc == 3) {
+    if (string(argv[2]) == "1") {
+      debug = true;
+    }
+  }
   while (ifile >> face_id >> img_name) {
     const string img_path = folder_path / img_name;
     cv::Mat image = cv::imread(img_path);
@@ -60,17 +65,32 @@ int main(int argc, char *argv[]) {
     if (dets.empty()) {
       cerr << "Not faces detected in image image: " << img_path << endl;
       cerr << "Skiping this image" << endl;
+      continue;
     }
 
     if (dets.size() > 1) {
       cerr << "More than one face detected in image image: " << img_path
            << endl;
       cerr << "Skiping this image" << endl;
+
+      for (const auto &box : dets) {
+        cv::rectangle(image, box.rect, {0, 0, 0}, 3);
+      }
+      if (debug) {
+        double s = 1080.0 / image.cols;
+        cv::resize(image, image, {}, s, s);
+        cv::imshow("MoreThatOneFace", image);
+        cv::waitKey(-1);
+      }
+      continue;
     }
 
     cout << "Processing image  '" << img_name << "' FaceID='" << face_id << "'"
          << endl;
+
     FaceLandmarks land = faceDet.GetFaceLandmarksOnet(image, dets[0].rect);
+    // FaceLandmarks land = faceDet.GetRecentRetinaFaceLandmarks()[0];
+
     Face face;
     cv::Rect face_rect = RectInsideFrame(dets[0].rect, image);
     face.Init(image, face_rect, land, faceDet.GetAlignMethod(), -1);
@@ -83,18 +103,19 @@ int main(int argc, char *argv[]) {
       cerr << "  Yaw   = " << face.GetYaw() << endl;
     }
 
-    auto embeddings = faceDet.GetFaceEmbedding(face.GetAlignFace(image));
+    cv::Mat align_face;
+    face.GetAlignFace(image).copyTo(align_face);
+    auto embeddings = faceDet.GetFaceEmbedding(align_face);
     if (!dbmanager.AddData(face_id.c_str(), embeddings)) {
       cerr << "Failed adding embedding data to file " << endl;
       return -1;
     }
 
     if (debug) {
-      cv::resize(face.GetAlignFace(image), dp_img({640+160, 160, 320, 320}), {320, 320});
+      cv::resize(align_face, dp_img({640 + 160, 160, 320, 320}), {320, 320});
       DrawLandmarks(image, face);
       cv::resize(image(face_rect), dp_img({160, 160, 320, 320}), {320, 320});
-
-      cv::imshow("faces", dp_img);
+      cv::imshow("Faces", dp_img);
       cv::waitKey(-1);
     }
   }

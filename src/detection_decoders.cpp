@@ -129,17 +129,14 @@ void RetinaFaceDecoder::Decode(const std::vector<cv::Mat> &outRaw,
   for (size_t i = 0; i < onames.size(); ++i) {
     if (onames[i] == "boxes") {
       bboxes_ptr = outRaw[i].ptr<float>(0);
-      // cout << " A " << outRaw[i].size << endl;
       continue;
     }
     if (onames[i] == "scores") {
       scores_ptr = outRaw[i].ptr<float>(0);
-      // cout << " B " << outRaw[i].size << endl;
       continue;
     }
     if (onames[i] == "landmarks") {
       landmarks_ptr = outRaw[i].ptr<float>(0);
-      // cout << " C " << outRaw[i].size << endl;
     }
   }
 
@@ -148,6 +145,11 @@ void RetinaFaceDecoder::Decode(const std::vector<cv::Mat> &outRaw,
     cerr << "Missing expected layers !!!" << endl;
     return;
   }
+
+  cv::Size dstSize;
+  const double s = 1.0/GetScaleFactorForResize(img_size, network_input_size_);
+  dstSize.width  = network_input_size_.width*s;
+  dstSize.height = network_input_size_.height*s;
 
   vector<float> scores;
   vector<cv::Rect2d> detections;
@@ -162,33 +164,33 @@ void RetinaFaceDecoder::Decode(const std::vector<cv::Mat> &outRaw,
       float w = exp(bboxes_ptr[i * 4 + 2] * 0.2) * priors_[i].w;
       float h = exp(bboxes_ptr[i * 4 + 3] * 0.2) * priors_[i].h;
 
-      det.x = (cx - 0.5 * w) * img_size.width;
-      det.y = (cy - 0.5 * h) * img_size.height;
-      det.width = w * img_size.width;
-      det.height = h * img_size.height;
+      det.x = (cx - 0.5 * w) * dstSize.width;
+      det.y = (cy - 0.5 * h) * dstSize.height;
+      det.width = w * dstSize.width;
+      det.height = h * dstSize.height;
 
       scores.push_back(scores_ptr[i * 2 + 1]);
       detections.push_back(det);
 
       cx = landmarks_ptr[i * 10 + 0] * 0.1 * priors_[i].w + priors_[i].cx;
       cy = landmarks_ptr[i * 10 + 1] * 0.1 * priors_[i].h + priors_[i].cy;
-      flm.leye = {cx * img_size.width, cy * img_size.height};
+      flm.leye = {cx * dstSize.width, cy * dstSize.height};
 
       cx = landmarks_ptr[i * 10 + 2] * 0.1 * priors_[i].w + priors_[i].cx;
       cy = landmarks_ptr[i * 10 + 3] * 0.1 * priors_[i].h + priors_[i].cy;
-      flm.reye = {cx * img_size.width, cy * img_size.height};
+      flm.reye = {cx * dstSize.width, cy * dstSize.height};
 
       cx = landmarks_ptr[i * 10 + 4] * 0.1 * priors_[i].w + priors_[i].cx;
       cy = landmarks_ptr[i * 10 + 5] * 0.1 * priors_[i].h + priors_[i].cy;
-      flm.nose = {cx * img_size.width, cy * img_size.height};
+      flm.nose = {cx * dstSize.width, cy * dstSize.height};
 
       cx = landmarks_ptr[i * 10 + 6] * 0.1 * priors_[i].w + priors_[i].cx;
       cy = landmarks_ptr[i * 10 + 7] * 0.1 * priors_[i].h + priors_[i].cy;
-      flm.lmouth = {cx * img_size.width, cy * img_size.height};
+      flm.lmouth = {cx * dstSize.width, cy * dstSize.height};
 
       cx = landmarks_ptr[i * 10 + 8] * 0.1 * priors_[i].w + priors_[i].cx;
       cy = landmarks_ptr[i * 10 + 9] * 0.1 * priors_[i].h + priors_[i].cy;
-      flm.rmouth = {cx * img_size.width, cy * img_size.height};
+      flm.rmouth = {cx * dstSize.width, cy * dstSize.height};
       flm.relative_coords = false;
       tmp_land.push_back(flm);
     }

@@ -33,8 +33,11 @@ void Draw(cv::Mat &image, const vector<TrackedObject> &detections,
   }
   for (const auto &obj : detections) {
     if (obj.last_frame == 0) {
-      const auto d = recogTracker.Get(obj.id);
-      drawer.DrawTrackedObj(image, obj, GetMsgToDisply(d));
+
+      if (recogTracker.Exists(obj.id)) {
+        const auto d = recogTracker.Get(obj.id);
+        drawer.DrawTrackedObj(image, obj, GetMsgToDisply(d));
+      }
     }
   }
 }
@@ -95,13 +98,16 @@ int main(int argc, char *argv[]) {
   long nframe = 0;
   cv::TickMeter tictac;
   ImageSaver imgSaver;
+  auto facesTracker = facesManager.GetFacesTracker();
   while (cap.read(frame)) {
 
     tictac.start();
     const auto tracked_faces = facesManager.Process(frame);
     for (const auto &obj : tracked_faces) {
-      if (obj.last_frame != 0)
+      if (!facesTracker.InCurrentFrame(obj) ||
+          !facesTracker.IsAcceptableDetection(obj)) {
         continue;
+      }
 
       Status st = RecognitionStatusTracker::PENDING;
       bool need_recog;
@@ -131,7 +137,7 @@ int main(int argc, char *argv[]) {
                  << "' Time: " << put_time(localtime(&currTime), "%FT%T%z")
                  << " RecogTh: " << recog.second << endl;
 
-            imgSaver.EnqueueImage(face.GetAlignFace(frame),
+            imgSaver.EnqueueImage(frame(obj.rect),
                                   std::to_string(nframe) + ".jpg");
           } else if (recog.second <= dbmanager.HiTh()) {
             st = RecognitionStatusTracker::DOUBTFUL;
@@ -145,7 +151,7 @@ int main(int argc, char *argv[]) {
                  << put_time(localtime(&currTime), "%FT%T%z")
                  << " RecogTh: " << recog.second << endl;
 
-            imgSaver.EnqueueImage(face.GetAlignFace(frame),
+            imgSaver.EnqueueImage(frame(obj.rect),
                                   std::to_string(nframe) + ".jpg");
           }
         }
@@ -154,11 +160,20 @@ int main(int argc, char *argv[]) {
         recogTracker.UpdateLife(obj.id);
       }
     }
-    recogTracker.RemoveOldObjects();
+    for (const auto &obj : facesTracker.GetRemovedObjects()) {
+      if (recogTracker.Exists(obj.id)) {
+        auto st = recogTracker.Get(obj.id);
+        if (st.status == RecognitionStatusTracker::PENDING ||
+            st.status == RecognitionStatusTracker::DOUBTFUL) {
+          cout << "NOT RECOGNITION APPLIED" << endl;
+        }
+        recogTracker.Remove(obj.id);
+      }
+    }
     tictac.stop();
 
     Draw(frame, tracked_faces, recogTracker, tictac.getFPS());
-    cv::imshow("faces", frame);
+    cv::imshow("Faces", frame);
     cv::waitKeyEx(-1);
     ++nframe;
   }

@@ -29,6 +29,8 @@ shared_ptr<Predictor> PredictorFromJson(const nlohmann::json &conf) {
   const float mc2 = conf.value("mc2", 0.0f);
   const float mc3 = conf.value("mc3", 0.0f);
 
+  const bool keep_aspect = conf.value("keep_aspect_ratio", false);
+
   cout << "Model name     : " << model_name << endl;
   cout << "  Type         : " << model_type << endl;
   cout << "  Input Size   : [" << input_w << 'X' << input_h << ']' << endl;
@@ -36,6 +38,7 @@ shared_ptr<Predictor> PredictorFromJson(const nlohmann::json &conf) {
   cout << "  Input Mean   : [" << mc1 << ',' << mc2 << ',' << mc3 << ']'
        << endl;
   cout << "  Swap Channels: " << swap_ch << endl;
+  cout << "  Keep Aspect  : " << keep_aspect << endl;
   cout << "  Framework    : " << framework << endl;
   cout << "  Target       : " << target << endl;
   cout << "  Backend      : " << backend << endl;
@@ -50,7 +53,7 @@ shared_ptr<Predictor> PredictorFromJson(const nlohmann::json &conf) {
     return {};
   }
   result->setExplictInputSize({input_w, input_h});
-  result->SetInputParamsNorm(scale, {mc1, mc2, mc3}, swap_ch);
+  result->SetInputParamsNorm(scale, {mc1, mc2, mc3}, swap_ch, keep_aspect);
   return result;
 }
 

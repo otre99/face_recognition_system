@@ -18,10 +18,12 @@ public:
     input_size_ = input_size;
   }
 
-  void SetInputParamsNorm(float scale, const cv::Scalar &mean, bool swap) {
+  void SetInputParamsNorm(float scale, const cv::Scalar &mean, bool swap,
+                          bool keep_aspect_ratio = false) {
     scale_ = scale;
     mean_ = mean;
     swap_ch_ = swap;
+    keep_aspect_ratio_ = keep_aspect_ratio;
   }
 
   virtual ~Predictor(){};
@@ -30,10 +32,11 @@ protected:
   Predictor() {}
   std::function<void(cv::Mat, float *)> normalization_fnt_{};
   cv::Size input_size_{};
-  int input_ch_ = 3;
+  int input_ch_{3};
   cv::Scalar mean_{};
-  double scale_ = 1.0;
-  bool swap_ch_ = false;
+  double scale_{1.0};
+  bool swap_ch_{false};
+  bool keep_aspect_ratio_{false};
 };
 
 #endif

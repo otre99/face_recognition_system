@@ -8,7 +8,7 @@
     "faces_manager": {
         "face_label_id": 1,
         "embedding_len": 512,
-        "align_method": 0,
+        "align_method": 2,
         "pitch_lims": [
             -15,
             25
@@ -41,7 +41,7 @@
                 "obj_th": 0.5,
                 "nms_th": 0.2,
                 "swap_ch": true,
-                "keep_aspect_ratio": true,
+                "keep_aspect_ratio": false,
                 "ncls": 2,
                 "labels": [
                     "none",

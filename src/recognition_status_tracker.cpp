@@ -26,13 +26,6 @@ RecognitionStatusTracker::Data RecognitionStatusTracker::Get(long id) const {
   return data_.at(id);
 }
 
-void RecognitionStatusTracker::RemoveOldObjects() {
-  for (auto iter = data_.begin(); iter != data_.end();) {
-    iter->second.life--;
-    if (iter->second.life <= 0) {
-      iter = data_.erase(iter);
-    } else {
-      ++iter;
-    }
-  }
+void RecognitionStatusTracker::Remove(long tracker_id) {
+  data_.erase(tracker_id);
 }
