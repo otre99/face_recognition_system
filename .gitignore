@@ -1,3 +1,8 @@
 /models/*
 /videos/*
 /BACK/*
+/debug/*
+/src/CMakeLists.txt.user
+/src/build/*
+/.vscode/c_cpp_properties.json
+/src/.vscode/c_cpp_properties.json
