@@ -2,7 +2,6 @@
 #define DETECTION_DECODERS_H_
 #include "common_utils.h"
 #include <opencv2/opencv.hpp>
-#include <set>
 
 using namespace std;
 

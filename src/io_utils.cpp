@@ -1,5 +1,5 @@
 #include "io_utils.h"
-#include "opencv_predictor.h"
+#include "all_predictors.h"
 #include <fstream>
 using namespace std;
 
