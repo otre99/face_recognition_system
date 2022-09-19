@@ -13,35 +13,46 @@ shared_ptr<Predictor> OpenVinoPredictor::Create(const string &model_path,
     }
 }
 
+
 bool  OpenVinoPredictor::Init(const string &model_path, const string &config_path,
                              const string &framework){
     ov::Core core;
-    std::shared_ptr<ov::Model> model = core.read_model(model_path);
+    std::shared_ptr<ov::Model> model = core.read_model(config_path, model_path);
 
     OPENVINO_ASSERT(model->inputs().size() == 1, "Sample supports models with 1 input only");
-    cout << "OpenVinoPredictor -> Model Name: " <<model->get_friendly_name() << endl;
+
+    cout << "OpenVinoPredictor Model name: " << model->get_friendly_name() << endl;
     const std::vector<ov::Output<ov::Node>> inputs = model->inputs();
+    cout << "OpenVinoPredictor Inputs:" << endl;
     for (const ov::Output<ov::Node> &input : inputs) {
         const std::string name = input.get_names().empty() ? "NONE" : input.get_any_name();
-        cout << "OpenVinoPredictor -> Input name: " << name << endl;
+        cout << "  Input name: " << name << endl;
         const ov::element::Type type = input.get_element_type();
-        cout <<  "        input type: " << type << endl;
+        cout << "  Input type: " << type << endl;
         const ov::Shape shape = input.get_shape();
-        cout << "        input shape: " << shape << endl;
+        cout << "  Input shape: " << shape << "\n\n";
     }
-
+    cout << "OpenVinoPredictor Outputs:" << endl;
     const std::vector<ov::Output<ov::Node>> outputs = model->outputs();
     for (const ov::Output<ov::Node> &output : outputs) {
-        cout  << "    outputs" << endl;
         const std::string name = output.get_names().empty() ? "NONE" : output.get_any_name();
-        cout << "        output name: " << name << endl;
+        cout << "  Output name: " << name << endl;
 
         const ov::element::Type type = output.get_element_type();
-        cout << "        output type: " << type << endl;
+        cout << "  Output type: " << type << endl;
 
-        const ov::Shape shape = output.get_shape();
-        cout << "        output shape: " << shape << endl;
+        const ov::PartialShape shape = output.get_partial_shape();
+        cout << "  Output shape: " << shape << "\n\n";
     }
+
+    ov::preprocess::PrePostProcessor ppp(model);
+    ppp.input().preprocess().resize(ov::preprocess::ResizeAlgorithm::RESIZE_LINEAR);
+    ppp.input().model().set_layout("NCHW");
+    ppp.output().tensor().set_element_type(ov::element::f32);
+
+    model = ppp.build();
+
+
 
     /*
     // -------- Step 3. Set up input

@@ -48,8 +48,8 @@ int main(int argc, char *argv[]){
     RetinaFaceDecoder decoder;
     decoder.Init(0.5,0.1,{320,320});
 
-    cv::dnn::Net net = cv::dnn::readNetFromONNX("/home/neal/REPOS/GenFaceEmbedding/FaceEmbedding/models/RetinaNetResnet50_SIZE320_BATCH1.onnx");
-    cv::Mat image = cv::imread("/home/neal/REPOS/GenFaceEmbedding/faces.jpg");
+    cv::dnn::Net net = cv::dnn::readNetFromONNX("/home/rccr/REPOS/models/RetinaNetResnet50_SIZE320_BATCH1.onnx");
+    cv::Mat image = cv::imread("/home/rccr/REPOS/faces.jpg");
     cv::Mat blob = cv::dnn::blobFromImage(image,1.0,{320,320},{104,117,123},false);
 
     net.setInput(blob);
