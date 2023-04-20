@@ -87,6 +87,8 @@ vector<FaceLandmarks> &FacesManager::GetRecentRetinaFaceLandmarks() const{
 FaceLandmarks
 FacesManager::GetFaceLandmarksFromOnetOutputs(const cv::Rect &rect,
                                               const float *landmark_data) {
+
+  //std::cout << "RECT " << rect << " " << landmark_data[0] << std::endl;                                                
   FaceLandmarks l;
   l.leye.x = rect.x + landmark_data[0 + 0] * rect.width - 1;
   l.leye.y = rect.y + landmark_data[5 + 0] * rect.height - 1;

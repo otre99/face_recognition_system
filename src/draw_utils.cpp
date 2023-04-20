@@ -7,6 +7,10 @@ void DrawUtils::Init(const cv::Size &frameSize) {
                                 &baseline_);
 }
 
+void DrawUtils::SetLineColor(cv::Scalar &lcolor){
+  line_color_ = lcolor;
+}
+
 void DrawUtils::DrawFace(cv::Mat &frame, const Face &face) {
   const cv::Rect &box = face.det_rect_;
   cv::rectangle(frame, box, line_color_, line_thickness_, cv::LINE_8);

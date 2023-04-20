@@ -10,6 +10,7 @@ public:
                       const string &msg = {});
   void DrawFPS(cv::Mat &frame, int fps);
   void Init(const cv::Size &frameSize);
+  void SetLineColor(cv::Scalar &lcolor);
 
 private:
   cv::Scalar line_color_{0, 0, 0};

@@ -1,14 +1,15 @@
 {
-    "txt_file": "/test_storage/image_samples/lst.txt",
-    "db": "/test_storage/db.dataset",
-    "video_input": "/home/jetson/sample-videos-master/face-demographics-walking-and-pause.mp4",
+    "txt_file": "/home/rccr/Desktop/host_storage/sample_images/list_of_images.txt",
+    "db": "/home/rccr/Desktop/host_storage/db.dataset",
+    "video_input": "/home/rccr/Desktop/host_storage/face-demographics-walking.mp4",
+    "captured_frames_folder": "/home/rccr/Desktop/host_storage/captures/",
     "recog_metric": 0,
     "recog_low_th": 0.8,
     "recog_hi_th": 1.1,
     "faces_manager": {
         "face_label_id": 1,
         "embedding_len": 512,
-        "align_method": 0,
+        "align_method": 2,
         "pitch_lims": [
             -15,
             25
@@ -21,11 +22,11 @@
             -15,
             15
         ],
-        "min_box_side": 70,
+        "min_box_side": 50,
         "models": [
             {
                 "config": "",
-                "weights": "/test_storage/models/RFB-320.onnx",
+                "weights": "/home/rccr/Desktop/host_storage/models/RFB-320.onnx",
                 "name": "RBF320",
                 "type": "detection",
                 "framework": "ONNX",
@@ -41,7 +42,7 @@
                 "obj_th": 0.5,
                 "nms_th": 0.2,
                 "swap_ch": true,
-                "keep_aspect_ratio": true,
+                "keep_aspect_ratio": false,
                 "ncls": 2,
                 "labels": [
                     "none",
@@ -50,7 +51,7 @@
             },
             {
                 "config": "",
-                "weights": "/test_storage/models/OnetD.onnx",
+                "weights": "/home/rccr/Desktop/host_storage/models/OnetD.onnx",
                 "name": "ONET",
                 "type": "landmarks",
                 "framework": "ONNX",
@@ -66,7 +67,7 @@
             },
             {
                 "config": "",
-                "weights": "/test_storage/models/VarGFaceNetD.onnx",
+                "weights": "/home/rccr/Desktop/host_storage/models/VarGFaceNetD.onnx",
                 "name": "Facenet512",
                 "type": "recognition",
                 "framework": "ONNX",

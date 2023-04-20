@@ -27,17 +27,17 @@ set(OPENVINO_PREDICTOR_SRC
     openvino_predictor.cpp openvino_predictor.h
 )
 
-### face_recognition_system
-#add_executable(face_recognition_system
-#    main.cpp
-#    recognition_status_tracker.cpp recognition_status_tracker.h
-#    image_saver.cpp image_saver.h
-#    ${COMMON_SRC})
-#target_link_libraries(face_recognition_system ${OpenCV_LIBS} pthread)
+## face_recognition_system
+add_executable(face_recognition_system
+   main.cpp
+   recognition_status_tracker.cpp recognition_status_tracker.h
+   image_saver.cpp image_saver.h
+   ${COMMON_SRC})
+target_link_libraries(face_recognition_system ${OpenCV_LIBS} pthread)# tbb)
 
-### dbcreator
-#add_executable(dbcreator db_creator.cpp ${COMMON_SRC})
-#target_link_libraries(dbcreator ${OpenCV_LIBS})
+## dbcreator
+add_executable(dbcreator db_creator.cpp ${COMMON_SRC})
+target_link_libraries(dbcreator ${OpenCV_LIBS} pthread)# tbb)
 
 ### embedding_matrix
 #add_executable(embedding_matrix embedding_matrix.cpp dbmanager.cpp dbmanager.h)
@@ -45,10 +45,18 @@ set(OPENVINO_PREDICTOR_SRC
 
 ### TESTS
 # test_openvino_predictor
-find_package(OpenVINO REQUIRED COMPONENTS Runtime)
-add_executable(test_openvino_predictor
-    test_openvino_predictor.cpp
-    predictor.h
-    ${OPENVINO_PREDICTOR_SRC}
+# find_package(OpenVINO REQUIRED COMPONENTS Runtime)
+# add_executable(test_openvino_predictor
+#     test_openvino_predictor.cpp
+#     predictor.h
+#     ${OPENVINO_PREDICTOR_SRC}
+# )
+# target_link_libraries(test_openvino_predictor ${OpenCV_LIBS} openvino::runtime pthread)
+
+
+set(CMAKE_INSTALL_PREFIX /app)
+install(
+    TARGETS face_recognition_system dbcreator
+    RUNTIME DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-target_link_libraries(test_openvino_predictor ${OpenCV_LIBS} openvino::runtime pthread)

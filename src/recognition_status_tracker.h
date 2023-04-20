@@ -1,6 +1,7 @@
 #ifndef RECOGNITION_STATUS_TRACKER_H_
 #define RECOGNITION_STATUS_TRACKER_H_
 #include <unordered_map>
+#include <string>
 
 using namespace std;
 

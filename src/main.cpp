@@ -9,18 +9,24 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 using namespace std;
+namespace fs = filesystem;
+using namespace std::chrono;
 
 DrawUtils drawer;
 
-string GetMsgToDisply(const RecognitionStatusTracker::Data &d) {
+string GetLineColorAndMsgToDisplay(const RecognitionStatusTracker::Data &d, cv::Scalar &lcolor) {
   switch (d.status) {
   case RecognitionStatusTracker::DOUBTFUL:
+    lcolor = {0,255,255};
     return "DOUBTFUL";
   case RecognitionStatusTracker::UNKNOWN:
+    lcolor = {0,0,255};
     return "UNKNOWN";
   case RecognitionStatusTracker::PENDING:
+    lcolor = {0,0,0};
     return "PENDING";
   default: // RecognitionStatusTracker::KNOWN:
+    lcolor = {0,255,0};
     return d.faceId;
   }
 }
@@ -36,20 +42,47 @@ void Draw(cv::Mat &image, const vector<TrackedObject> &detections,
 
       if (recogTracker.Exists(obj.id)) {
         const auto d = recogTracker.Get(obj.id);
-        drawer.DrawTrackedObj(image, obj, GetMsgToDisply(d));
+        cv::Scalar lcolor;
+
+        const string msg = GetLineColorAndMsgToDisplay(d, lcolor);
+        drawer.SetLineColor(lcolor);
+        drawer.DrawTrackedObj(image, obj, msg);
       }
     }
   }
 }
 
 using Status = RecognitionStatusTracker::Status;
-using namespace std::chrono;
+void AddLogLine(ofstream &ofile, const string &faceId, Status st, float recog_th, const string &img_file){
+
+  string faceIdStr="";
+  switch (st) {
+  case RecognitionStatusTracker::UNKNOWN:
+    faceIdStr="UNKNOWN";
+    break;
+  case RecognitionStatusTracker::KNOWN:
+    faceIdStr=faceId;
+    break;
+  default:
+    break;
+  }
+  time_t currTime = system_clock::to_time_t(system_clock::now());
+  ofile << faceIdStr << ','
+        << recog_th << ','
+        << put_time(localtime(&currTime), "%FT%T%z") << ','
+        << img_file
+        << endl;
+}
+
+
+
 
 int main(int argc, char *argv[]) {
   FacesManager facesManager;
   DBManager dbmanager;
   string video_input = "/dev/video0";
   RecognitionStatusTracker recogTracker;
+  filesystem::path captured_frames_folder;
   {
     const auto json_data = LoadJSon(argv[1]);
 
@@ -75,6 +108,9 @@ int main(int argc, char *argv[]) {
 
     // input video
     video_input = json_data["video_input"].get<string>();
+
+    //captured_frames_folder
+    captured_frames_folder = fs::path(json_data["captured_frames_folder"].get<string>());
   }
   drawer.Init({});
 
@@ -99,6 +135,9 @@ int main(int argc, char *argv[]) {
   cv::TickMeter tictac;
   ImageSaver imgSaver;
   auto facesTracker = facesManager.GetFacesTracker();
+
+  ofstream log_file(captured_frames_folder/"logs.csv");
+  log_file << "FaceId,RecogTh,Time,Image\n";
   while (cap.read(frame)) {
 
     tictac.start();
@@ -125,6 +164,8 @@ int main(int argc, char *argv[]) {
         face.Init(frame, obj.rect, lands, facesManager.GetAlignMethod(),
                   obj.id);
         if (facesManager.IsGoodForRegcognition(face)) {
+
+        const string image_name = to_string(nframe) + ".jpg";
           auto embedding =
               facesManager.GetFaceEmbedding(face.GetAlignFace(frame));
           auto recog = dbmanager.Find(embedding);
@@ -132,13 +173,10 @@ int main(int argc, char *argv[]) {
           if (recog.second < dbmanager.LowTh()) {
             st = RecognitionStatusTracker::KNOWN;
             faceId = recog.first;
-            time_t currTime = system_clock::to_time_t(system_clock::now());
-            cout << "KNOWN_FACE FaceId: '" << faceId
-                 << "' Time: " << put_time(localtime(&currTime), "%FT%T%z")
-                 << " RecogTh: " << recog.second << endl;
-
+            AddLogLine(log_file,faceId, st,recog.second, image_name);
             imgSaver.EnqueueImage(frame(obj.rect),
-                                  std::to_string(nframe) + ".jpg");
+                                  captured_frames_folder/image_name);
+
           } else if (recog.second <= dbmanager.HiTh()) {
             st = RecognitionStatusTracker::DOUBTFUL;
             faceId = recog.first;
@@ -146,13 +184,9 @@ int main(int argc, char *argv[]) {
                  << "' RecogTh: " << recog.second << endl;
           } else {
             st = RecognitionStatusTracker::UNKNOWN;
-            time_t currTime = system_clock::to_time_t(system_clock::now());
-            cout << "UNKNOWN_FACE Time: "
-                 << put_time(localtime(&currTime), "%FT%T%z")
-                 << " RecogTh: " << recog.second << endl;
-
+            AddLogLine(log_file,faceId, st,recog.second, image_name);
             imgSaver.EnqueueImage(frame(obj.rect),
-                                  std::to_string(nframe) + ".jpg");
+                                  captured_frames_folder/image_name);
           }
         }
         recogTracker.Update(obj.id, st, faceId);
@@ -168,13 +202,16 @@ int main(int argc, char *argv[]) {
           cout << "NOT RECOGNITION APPLIED" << endl;
         }
         recogTracker.Remove(obj.id);
+        //TODO(otre99): register
       }
     }
     tictac.stop();
 
     Draw(frame, tracked_faces, recogTracker, tictac.getFPS());
     cv::imshow("Faces", frame);
-    cv::waitKeyEx(-1);
+    if (cv::waitKeyEx(1) == 27){
+      break;
+    }
     ++nframe;
   }
 }

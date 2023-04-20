@@ -42,6 +42,14 @@ void ImageSaver::Loop() {
 
     std::this_thread::sleep_for(500ms);
   }
+
+  // saving pending images
+  while (!data_.empty()) {
+    Data dd = data_.top();
+    data_.pop();
+    mutex_.unlock();
+    SaveImage(dd);
+  }
 }
 
 void ImageSaver::SaveImage(const Data &d) {

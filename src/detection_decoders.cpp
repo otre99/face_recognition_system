@@ -1,4 +1,6 @@
 #include "detection_decoders.h"
+//#include <execution>
+//#include <mutex>
 
 vector<Anchor> GeneratePriors(const int kW, const int kH,
                               const vector<float> &kStrides,
@@ -78,6 +80,43 @@ void ULFDDecoder::Decode(const std::vector<cv::Mat> &outRaw,
   vector<cv::Rect2d> detections;
   cv::Rect2d det;
   vector<cv::Point2f> lptr;
+  vector<int> idxs;
+
+  // Parallel implementation
+  //  const auto processor_count = std::thread::hardware_concurrency();
+  //  idxs.resize(processor_count);
+  //  std::iota(idxs.begin(), idxs.end(), 0);
+  //  const size_t tasks_per_thread = priors_.size() / processor_count;
+  //  std::mutex gmutex{};
+  //  std::for_each(
+  //      std::execution::par_unseq, idxs.begin(), idxs.end(), [&](int j) {
+  //        const int j1 = j * tasks_per_thread;
+  //        const int j2 = j == processor_count-1 ? priors_.size() : j1 +
+  //        tasks_per_thread; vector<float> lscores; vector<cv::Rect2d>
+  //        ldetections; cv::Rect2d ldet; for (int i = j1; i < j2; ++i) {
+  //          if (scores_ptr[i * 2 + 1] > score_th_) {
+
+  //            float cx = bboxes_ptr[i * 4] * 0.1 * priors_[i].w +
+  //            priors_[i].cx; float cy =
+  //                bboxes_ptr[i * 4 + 1] * 0.1 * priors_[i].h + priors_[i].cy;
+  //            float w = exp(bboxes_ptr[i * 4 + 2] * 0.2) * priors_[i].w;
+  //            float h = exp(bboxes_ptr[i * 4 + 3] * 0.2) * priors_[i].h;
+
+  //            ldet.x = (cx - 0.5 * w) * img_size.width;
+  //            ldet.y = (cy - 0.5 * h) * img_size.height;
+  //            ldet.width = w * img_size.width;
+  //            ldet.height = h * img_size.height;
+
+  //            lscores.push_back(scores_ptr[i * 2 + 1]);
+  //            ldetections.emplace_back(ldet);
+  //          }
+  //        }
+  //        std::lock_guard<std::mutex> lock(gmutex);
+  //        detections.insert(detections.cend(), ldetections.cbegin(),
+  //        ldetections.cend()); scores.insert(scores.cend(), lscores.cbegin(),
+  //        lscores.cend());
+  //      });
+
   for (size_t i = 0; i < priors_.size(); i++) {
     if (scores_ptr[i * 2 + 1] > score_th_) {
 
@@ -95,7 +134,8 @@ void ULFDDecoder::Decode(const std::vector<cv::Mat> &outRaw,
       detections.push_back(det);
     }
   }
-  vector<int> idxs;
+
+  //  vector<int> idxs;
   cv::dnn::NMSBoxes(detections, scores, score_th_, nms_th_, idxs);
 
   objects.clear();
@@ -147,57 +187,122 @@ void RetinaFaceDecoder::Decode(const std::vector<cv::Mat> &outRaw,
   }
 
   cv::Size dstSize;
-  const double s = 1.0/GetScaleFactorForResize(img_size, network_input_size_);
-  dstSize.width  = network_input_size_.width*s;
-  dstSize.height = network_input_size_.height*s;
+  const double s = 1.0 / GetScaleFactorForResize(img_size, network_input_size_);
+  dstSize.width = network_input_size_.width * s;
+  dstSize.height = network_input_size_.height * s;
 
   vector<float> scores;
   vector<cv::Rect2d> detections;
   cv::Rect2d det;
   FaceLandmarks flm;
   vector<FaceLandmarks> tmp_land;
-  for (size_t i = 0; i < priors_.size(); i++) {
-    if (scores_ptr[i * 2 + 1] > score_th_) {
-
-      float cx = bboxes_ptr[i * 4] * 0.1 * priors_[i].w + priors_[i].cx;
-      float cy = bboxes_ptr[i * 4 + 1] * 0.1 * priors_[i].h + priors_[i].cy;
-      float w = exp(bboxes_ptr[i * 4 + 2] * 0.2) * priors_[i].w;
-      float h = exp(bboxes_ptr[i * 4 + 3] * 0.2) * priors_[i].h;
-
-      det.x = (cx - 0.5 * w) * dstSize.width;
-      det.y = (cy - 0.5 * h) * dstSize.height;
-      det.width = w * dstSize.width;
-      det.height = h * dstSize.height;
-
-      scores.push_back(scores_ptr[i * 2 + 1]);
-      detections.push_back(det);
-
-      cx = landmarks_ptr[i * 10 + 0] * 0.1 * priors_[i].w + priors_[i].cx;
-      cy = landmarks_ptr[i * 10 + 1] * 0.1 * priors_[i].h + priors_[i].cy;
-      flm.leye = {cx * dstSize.width, cy * dstSize.height};
-
-      cx = landmarks_ptr[i * 10 + 2] * 0.1 * priors_[i].w + priors_[i].cx;
-      cy = landmarks_ptr[i * 10 + 3] * 0.1 * priors_[i].h + priors_[i].cy;
-      flm.reye = {cx * dstSize.width, cy * dstSize.height};
-
-      cx = landmarks_ptr[i * 10 + 4] * 0.1 * priors_[i].w + priors_[i].cx;
-      cy = landmarks_ptr[i * 10 + 5] * 0.1 * priors_[i].h + priors_[i].cy;
-      flm.nose = {cx * dstSize.width, cy * dstSize.height};
-
-      cx = landmarks_ptr[i * 10 + 6] * 0.1 * priors_[i].w + priors_[i].cx;
-      cy = landmarks_ptr[i * 10 + 7] * 0.1 * priors_[i].h + priors_[i].cy;
-      flm.lmouth = {cx * dstSize.width, cy * dstSize.height};
-
-      cx = landmarks_ptr[i * 10 + 8] * 0.1 * priors_[i].w + priors_[i].cx;
-      cy = landmarks_ptr[i * 10 + 9] * 0.1 * priors_[i].h + priors_[i].cy;
-      flm.rmouth = {cx * dstSize.width, cy * dstSize.height};
-      flm.relative_coords = false;
-      tmp_land.push_back(flm);
-    }
-  }
   vector<int> idxs;
-  cv::dnn::NMSBoxes(detections, scores, score_th_, nms_th_, idxs);
 
+//  // Parallel implementation
+//  const auto processor_count = std::thread::hardware_concurrency();
+//  idxs.resize(processor_count);
+//  std::iota(idxs.begin(), idxs.end(), 0);
+//  const size_t tasks_per_thread = priors_.size() / processor_count;
+//  std::mutex gmutex{};
+//  std::for_each(
+//      std::execution::par_unseq, idxs.begin(), idxs.end(), [&](int j) {
+//        const int j1 = j * tasks_per_thread;
+//        const int j2 =
+//            j == processor_count - 1 ? priors_.size() : j1 + tasks_per_thread;
+//        vector<float> lscores;
+//        vector<cv::Rect2d> ldetections;
+//        vector<FaceLandmarks> ltmp_land;
+//        FaceLandmarks lflm;
+//        cv::Rect2d ldet;
+
+//        for (int i = j1; i < j2; ++i) {
+//          if (scores_ptr[i * 2 + 1] > score_th_) {
+
+//            float cx = bboxes_ptr[i * 4] * 0.1 * priors_[i].w + priors_[i].cx;
+//            float cy =
+//                bboxes_ptr[i * 4 + 1] * 0.1 * priors_[i].h + priors_[i].cy;
+//            float w = exp(bboxes_ptr[i * 4 + 2] * 0.2) * priors_[i].w;
+//            float h = exp(bboxes_ptr[i * 4 + 3] * 0.2) * priors_[i].h;
+
+//            ldet.x = (cx - 0.5 * w) * dstSize.width;
+//            ldet.y = (cy - 0.5 * h) * dstSize.height;
+//            ldet.width = w * dstSize.width;
+//            ldet.height = h * dstSize.height;
+
+//            cx = landmarks_ptr[i * 10 + 0] * 0.1 * priors_[i].w + priors_[i].cx;
+//            cy = landmarks_ptr[i * 10 + 1] * 0.1 * priors_[i].h + priors_[i].cy;
+//            lflm.leye = {cx * dstSize.width, cy * dstSize.height};
+
+//            cx = landmarks_ptr[i * 10 + 2] * 0.1 * priors_[i].w + priors_[i].cx;
+//            cy = landmarks_ptr[i * 10 + 3] * 0.1 * priors_[i].h + priors_[i].cy;
+//            lflm.reye = {cx * dstSize.width, cy * dstSize.height};
+
+//            cx = landmarks_ptr[i * 10 + 4] * 0.1 * priors_[i].w + priors_[i].cx;
+//            cy = landmarks_ptr[i * 10 + 5] * 0.1 * priors_[i].h + priors_[i].cy;
+//            lflm.nose = {cx * dstSize.width, cy * dstSize.height};
+
+//            cx = landmarks_ptr[i * 10 + 6] * 0.1 * priors_[i].w + priors_[i].cx;
+//            cy = landmarks_ptr[i * 10 + 7] * 0.1 * priors_[i].h + priors_[i].cy;
+//            lflm.lmouth = {cx * dstSize.width, cy * dstSize.height};
+
+//            cx = landmarks_ptr[i * 10 + 8] * 0.1 * priors_[i].w + priors_[i].cx;
+//            cy = landmarks_ptr[i * 10 + 9] * 0.1 * priors_[i].h + priors_[i].cy;
+//            lflm.rmouth = {cx * dstSize.width, cy * dstSize.height};
+//            lflm.relative_coords = false;
+
+//            lscores.push_back(scores_ptr[i * 2 + 1]);
+//            ldetections.push_back(ldet);
+//            ltmp_land.push_back(lflm);
+//          }
+//        }
+//        std::lock_guard<std::mutex> lock(gmutex);
+//        detections.insert(detections.cend(), ldetections.cbegin(),
+//                          ldetections.cend());
+//        scores.insert(scores.cend(), lscores.cbegin(), lscores.cend());
+//        tmp_land.insert(tmp_land.cend(), ltmp_land.cbegin(), ltmp_land.cend());
+//      });
+
+   for (size_t i = 0; i < priors_.size(); i++) {
+     if (scores_ptr[i * 2 + 1] > score_th_) {
+
+       float cx = bboxes_ptr[i * 4] * 0.1 * priors_[i].w + priors_[i].cx;
+       float cy = bboxes_ptr[i * 4 + 1] * 0.1 * priors_[i].h + priors_[i].cy;
+       float w = exp(bboxes_ptr[i * 4 + 2] * 0.2) * priors_[i].w;
+       float h = exp(bboxes_ptr[i * 4 + 3] * 0.2) * priors_[i].h;
+
+       det.x = (cx - 0.5 * w) * dstSize.width;
+       det.y = (cy - 0.5 * h) * dstSize.height;
+       det.width = w * dstSize.width;
+       det.height = h * dstSize.height;
+
+       cx = landmarks_ptr[i * 10 + 0] * 0.1 * priors_[i].w + priors_[i].cx;
+       cy = landmarks_ptr[i * 10 + 1] * 0.1 * priors_[i].h + priors_[i].cy;
+       flm.leye = {cx * dstSize.width, cy * dstSize.height};
+
+       cx = landmarks_ptr[i * 10 + 2] * 0.1 * priors_[i].w + priors_[i].cx;
+       cy = landmarks_ptr[i * 10 + 3] * 0.1 * priors_[i].h + priors_[i].cy;
+       flm.reye = {cx * dstSize.width, cy * dstSize.height};
+
+       cx = landmarks_ptr[i * 10 + 4] * 0.1 * priors_[i].w + priors_[i].cx;
+       cy = landmarks_ptr[i * 10 + 5] * 0.1 * priors_[i].h + priors_[i].cy;
+       flm.nose = {cx * dstSize.width, cy * dstSize.height};
+
+       cx = landmarks_ptr[i * 10 + 6] * 0.1 * priors_[i].w + priors_[i].cx;
+       cy = landmarks_ptr[i * 10 + 7] * 0.1 * priors_[i].h + priors_[i].cy;
+       flm.lmouth = {cx * dstSize.width, cy * dstSize.height};
+
+       cx = landmarks_ptr[i * 10 + 8] * 0.1 * priors_[i].w + priors_[i].cx;
+       cy = landmarks_ptr[i * 10 + 9] * 0.1 * priors_[i].h + priors_[i].cy;
+       flm.rmouth = {cx * dstSize.width, cy * dstSize.height};
+       flm.relative_coords = false;
+
+       scores.push_back(scores_ptr[i * 2 + 1]);
+       detections.push_back(det);
+       tmp_land.push_back(flm);
+     }
+   }
+
+  cv::dnn::NMSBoxes(detections, scores, score_th_, nms_th_, idxs);
   objects.resize(idxs.size());
   landmarks_.resize(idxs.size());
   BBox o;

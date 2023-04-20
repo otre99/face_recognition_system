@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
       if (debug) {
         double s = 1080.0 / image.cols;
         cv::resize(image, image, {}, s, s);
-        cv::imshow("MoreThatOneFace", image);
+        cv::imshow("MoreThanOneFace", image);
         cv::waitKey(-1);
       }
       continue;
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
          << endl;
 
     FaceLandmarks land = faceDet.GetFaceLandmarksOnet(image, dets[0].rect);
-    // FaceLandmarks land = faceDet.GetRecentRetinaFaceLandmarks()[0];
+    //    FaceLandmarks land = faceDet.GetRecentRetinaFaceLandmarks()[0];
 
     Face face;
     cv::Rect face_rect = RectInsideFrame(dets[0].rect, image);
