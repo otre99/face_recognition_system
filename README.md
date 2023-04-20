@@ -12,7 +12,7 @@ cmake ../src && make -j4
 
 # Run simple example:
 
-*   Download and unzip sample [data](https://drive.google.com/file/d/17jTx4Zhg1McQJGw5xEs312sAuFSY4ZeS/view?usp=sharing) 
+*   Download and unzip sample [data](https://drive.google.com/file/d/17jMLZcqIrwoz2-7JfqsycZ8mgqKP7Q17/view?usp=share_link) 
 
 ```
     unzip host_storage.zip
