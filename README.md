@@ -3,7 +3,7 @@ Face Recognition (under construction)
 
 # Compile
 
-The project depends on OpenCV 4.*
+The project depends on OpenCV 4.* (Tested with OpenCV 4.5.5)
 ```
 mkdir build
 cd build 
@@ -19,4 +19,20 @@ cmake ../src && make -j4
 ```
 
 *   Create face emdbbing from images
+```
+./build/dbcreator host_storage/config/config_rbf320.json
+```
+
+This will create a dataset file (`host_storage/db.dataset`) that containts the corresponding face embeddings
+
+*   Run face recognition program 
+```
+./build/face_recognition_system host_storage/config/config_rbf320.json 
+```
+
+![](assets/demo.GIF)
+
+You can play with your web can if you change set `"video_input": "/dev/video0"` in file [config_rbf320.json](./config/config_rbf320.json). 
+Also you can adjust the others parameters 
+
 

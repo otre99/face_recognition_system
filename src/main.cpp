@@ -138,6 +138,15 @@ int main(int argc, char *argv[]) {
 
   ofstream log_file(captured_frames_folder/"logs.csv");
   log_file << "FaceId,RecogTh,Time,Image\n";
+
+//  cv::VideoWriter writer;
+//  auto codec = cv::VideoWriter::fourcc('M', 'J', 'P', 'G');  // select desired codec (must be available at runtime)
+//  double fps = 25.0;                          // framerate of the created video stream
+//  string filename = "./live.avi";             // name of the output video file
+//  cv::Mat src;
+//  cap.read(src);
+//  writer.open(filename, codec, fps, src.size(), true);
+
   while (cap.read(frame)) {
 
     tictac.start();
@@ -213,5 +222,7 @@ int main(int argc, char *argv[]) {
       break;
     }
     ++nframe;
+
+//    writer.write(frame);
   }
 }

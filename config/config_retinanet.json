@@ -1,8 +1,8 @@
 {
-    "txt_file": "/home/rccr/Desktop/host_storage/sample_images/list_of_images.txt",
-    "db": "/home/rccr/Desktop/host_storage/db.dataset",
-    "video_input": "/home/rccr/Desktop/host_storage/face-demographics-walking.mp4",
-    "captured_frames_folder": "/home/rccr/Desktop/host_storage/captures/",
+    "txt_file": "./host_storage/sample_images/list_of_images.txt",
+    "db": "./host_storage/db.dataset",
+    "video_input": "./host_storage/face-demographics-walking.mp4",
+    "captured_frames_folder": "./host_storage/captures/",
     "recog_metric": 0,
     "recog_low_th": 0.8,
     "recog_hi_th": 1.1,
@@ -26,7 +26,7 @@
         "models": [
             {
                 "config": "",
-                "weights": "/home/rccr/Desktop/host_storage/models/RetinaNetResnet50_SIZE640D.onnx",
+                "weights": "./host_storage/models/RetinaNetResnet50_SIZE640D.onnx",
                 "name": "RetinaFace",
                 "type": "detection",
                 "framework": "ONNX",
@@ -51,7 +51,7 @@
             },
             {
                 "config": "",
-                "weights": "/home/rccr/Desktop/host_storage/models/OnetD.onnx",
+                "weights": "./host_storage/models/OnetD.onnx",
                 "name": "ONET",
                 "type": "landmarks",
                 "framework": "ONNX",
@@ -67,7 +67,7 @@
             },
             {
                 "config": "",
-                "weights": "/home/rccr/Desktop/host_storage/models/VarGFaceNetD.onnx",
+                "weights": "./host_storage/models/VarGFaceNetD.onnx",
                 "name": "Facenet512",
                 "type": "recognition",
                 "framework": "ONNX",
