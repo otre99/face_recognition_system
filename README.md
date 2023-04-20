@@ -32,7 +32,7 @@ This will create a dataset file (`host_storage/db.dataset`) that containts the c
 
 ![](assets/demo.GIF)
 
-The program logs can be found in the `.host_storage/captures` folder.
+The program logs can be found in the `host_storage/captures` folder.
 
 
 You can play with your web can if you change set `"video_input": "/dev/video0"` in file [config_rbf320.json](./config/config_rbf320.json). 
